@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     bottom: 40,
     fontSize: 18,
     color: colors.primary,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
   },
 });
 

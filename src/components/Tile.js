@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors } from '../constants/colors';
+// TODO
+// import { colors } from '../constants/colors';
 
 const Tile = ({ value, size, onPress, disabled = false }) => {
   const getTileColor = (value) => {

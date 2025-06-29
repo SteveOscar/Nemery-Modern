@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
+import { colors } from '../constants/colors';
 
 const { height } = Dimensions.get('window');
 
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: height * 0.045,
     color: colors.secondary,
-    fontFamily: 'American Typewriter',
+    fontFamily: 'System',
     fontWeight: '600',
   },
 });

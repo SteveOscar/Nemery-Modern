@@ -1,5 +1,5 @@
-export const colors = {
-  
+// src/constants/colors.js
+const colors = {
   // Primary colors
   primary: '#007AFF',
   primaryDark: '#0056CC',
@@ -9,6 +9,9 @@ export const colors = {
   secondary: '#5856D6',
   secondaryDark: '#3634A3',
   secondaryLight: '#7A79E0',
+  
+  // Accent color
+  accent: '#FF6B35',
   
   // Success colors
   success: '#34C759',
@@ -80,6 +83,8 @@ export const colors = {
   transparent: 'transparent',
 };
 
+export { colors };
+
 // Dark theme colors (for future use)
 export const darkColors = {
   ...colors,
@@ -98,24 +103,21 @@ export const darkColors = {
 
 // Export individual color groups for convenience
 export const tileColors = {
-  0: colors.tileEmpty,
-  2: colors.tile2,
-  4: colors.tile4,
-  8: colors.tile8,
-  16: colors.tile16,
-  32: colors.tile32,
-  64: colors.tile64,
-  128: colors.tile128,
-  256: colors.tile256,
-  512: colors.tile512,
-  1024: colors.tile1024,
-  2048: colors.tile2048,
+  0: '#CDC1B4', // tileEmpty
+  2: '#EEE4DA', // tile2
+  4: '#EDE0C8', // tile4
+  8: '#F2B179', // tile8
+  16: '#F59563', // tile16
+  32: '#F67C5F', // tile32
+  64: '#F65E3B', // tile64
+  128: '#EDCF72', // tile128
+  256: '#EDCC61', // tile256
+  512: '#EDC850', // tile512
+  1024: '#EDC53F', // tile1024
+  2048: '#EDC22E', // tile2048
 };
 
 export const tileTextColors = {
-  dark: colors.tileTextDark,
-  light: colors.tileTextLight,
-};
-
-// Default export
-export default colors; 
+  dark: '#776E65', // tileTextDark
+  light: '#F9F6F2', // tileTextLight
+}; 

@@ -9,8 +9,8 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import colors from '../constants/colors';
-import { useSound } from '../hooks/useSound';
+import { colors } from '../constants/colors';
+import { useSound } from '../contexts/SoundContext';
 
 const { width, height } = Dimensions.get('window');
 const CELL_SIZE = Math.floor(width * 0.2);
@@ -94,13 +94,13 @@ const GameScreen = ({
   const [inPlay, setInPlay] = useState(false);
 
   // Sound
-  const {
-    playMoveSound,
-    playButtonSound,
-    playGameOverSound,
-    playVictorySound,
-    playSound,
-  } = useSound();
+  const { playSound } = useSound();
+  
+  // Convenience sound functions
+  const playMoveSound = useCallback(() => playSound('whoosh'), [playSound]);
+  const playButtonSound = useCallback(() => playSound('tap'), [playSound]);
+  const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
+  const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
 
   // Show/hide tile helpers
   const initialSingleTileShow = useCallback(
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     color: colors.secondary,
     fontSize: LETTER_SIZE,
     backgroundColor: 'transparent',
-    fontFamily: 'American Typewriter',
+    fontFamily: 'System',
     textShadowColor: 'black',
     textShadowOffset: { width: 1, height: 1 },
   },
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
   timerText: {
     color: colors.secondary,
     backgroundColor: 'transparent',
-    fontFamily: 'American Typewriter',
+    fontFamily: 'System',
     fontSize: width * 0.05,
     textShadowColor: colors.primary,
     textShadowOffset: { width: 1, height: 1 },

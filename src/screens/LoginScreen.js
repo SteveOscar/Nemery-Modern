@@ -149,6 +149,7 @@ const LoginScreen = () => {
               onFocus={handleFocus}
               onBlur={handleBlur}
               editable={!isLoading}
+              fontFamily="System"
             />
             
             <Button
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: height * 0.045,
     color: colors.primary,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
     marginBottom: -10,
   },
   formContainer: {
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
   instructionText: {
     fontSize: height * 0.03,
     color: colors.text,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
   },
   inputContainer: {
     width: '100%',
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.text,
     backgroundColor: 'white',
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -234,14 +235,14 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontSize: height * 0.025,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
     textAlign: 'center',
     marginTop: 10,
   },
   messageText: {
     color: colors.primary,
     fontSize: height * 0.025,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
     textAlign: 'center',
     marginTop: 10,
   },

@@ -64,10 +64,7 @@ export const SoundProvider = ({ children }) => {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
-        interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DUCK_OTHERS,
         shouldDuckAndroid: true,
-        interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DUCK_OTHERS,
-        playThroughEarpieceAndroid: false,
         staysActiveInBackground: false,
       });
 

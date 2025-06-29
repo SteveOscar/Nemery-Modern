@@ -38,11 +38,11 @@ export default function App() {
           }
         }
 
-        // Load fonts
-        await Font.loadAsync({
-          'American-Typewriter': require('./assets/fonts/AmericanTypewriter.ttf'),
-          'Iowan-Old-Style': require('./assets/fonts/IowanOldStyle.ttf'),
-        });
+        // Load fonts - temporarily disabled due to missing font files
+        // await Font.loadAsync({
+        //   'American-Typewriter': require('./assets/fonts/AmericanTypewriter.ttf'),
+        //   'Iowan-Old-Style': require('./assets/fonts/IowanOldStyle.ttf'),
+        // });
 
         // Configure audio
         await Audio.setAudioModeAsync({
