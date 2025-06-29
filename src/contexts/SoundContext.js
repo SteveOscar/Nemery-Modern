@@ -19,12 +19,12 @@ const SOUND_FILES = {
   tap: require('../../assets/sounds/tap.mp3'),
   whoosh: require('../../assets/sounds/whoosh.mp3'),
   whoosh2: require('../../assets/sounds/whoosh2.mp3'),
-  bell: require('../../assets/sounds/bell.mp3'),
-  bell3: require('../../assets/sounds/bell3.mp3'),
-  buzzer: require('../../assets/sounds/buzzer.mp3'),
-  beep: require('../../assets/sounds/beep.mp3'),
-  exhale: require('../../assets/sounds/exhale.mp3'),
-  scream: require('../../assets/sounds/scream.mp3'),
+  bell: require('../../assets/sounds/button.mp3'),
+  bell3: require('../../assets/sounds/button.mp3'),
+  buzzer: require('../../assets/sounds/button.mp3'),
+  beep: require('../../assets/sounds/button.mp3'),
+  exhale: require('../../assets/sounds/button.mp3'),
+  scream: require('../../assets/sounds/button.mp3'),
 };
 
 // Default volume levels for each sound

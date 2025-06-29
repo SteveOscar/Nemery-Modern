@@ -9,7 +9,7 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import { colors } from '../constants/colors';
+import colors from '../constants/colors';
 import { useSound } from '../hooks/useSound';
 
 const { width, height } = Dimensions.get('window');

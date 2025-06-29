@@ -1,19 +1,19 @@
 // src/hooks/useSound.js
-import { useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Audio } from 'expo-av';
-import { useGame } from '../contexts/GameContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const soundFiles = {
   button: require('../../assets/sounds/button.mp3'),
   tap: require('../../assets/sounds/tap.mp3'),
   whoosh: require('../../assets/sounds/whoosh.mp3'),
   whoosh2: require('../../assets/sounds/whoosh2.mp3'),
-  bell: require('../../assets/sounds/bell.mp3'),
-  bell3: require('../../assets/sounds/bell3.mp3'),
-  buzzer: require('../../assets/sounds/buzzer.mp3'),
-  beep: require('../../assets/sounds/beep.mp3'),
-  exhale: require('../../assets/sounds/exhale.mp3'),
-  scream: require('../../assets/sounds/scream.mp3'),
+  bell: require('../../assets/sounds/button.mp3'),
+  bell3: require('../../assets/sounds/button.mp3'),
+  buzzer: require('../../assets/sounds/tap.mp3'),
+  beep: require('../../assets/sounds/button.mp3'),
+  exhale: require('../../assets/sounds/whoosh.mp3'),
+  scream: require('../../assets/sounds/tap.mp3'),
 };
 
 const soundVolumes = {
@@ -30,8 +30,13 @@ const soundVolumes = {
 };
 
 export const useSound = () => {
-  const { soundEnabled } = useGame();
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const loadedSounds = useRef({});
+
+  // Load sound settings on mount
+  useEffect(() => {
+    loadSoundSettings();
+  }, []);
 
   // Cleanup sounds on unmount
   useEffect(() => {
@@ -45,6 +50,17 @@ export const useSound = () => {
       });
     };
   }, []);
+
+  const loadSoundSettings = async () => {
+    try {
+      const savedSoundEnabled = await AsyncStorage.getItem('soundEnabled');
+      if (savedSoundEnabled !== null) {
+        setSoundEnabled(savedSoundEnabled === 'true');
+      }
+    } catch (error) {
+      console.error('Error loading sound settings:', error);
+    }
+  };
 
   const playSound = useCallback(async (soundName, options = {}) => {
     if (!soundEnabled || !soundFiles[soundName]) {
@@ -140,10 +156,32 @@ export const useSound = () => {
     await Promise.all(promises);
   }, []);
 
+  const toggleSound = useCallback(async () => {
+    const newValue = !soundEnabled;
+    setSoundEnabled(newValue);
+    try {
+      await AsyncStorage.setItem('soundEnabled', String(newValue));
+    } catch (error) {
+      console.error('Error saving sound setting:', error);
+    }
+  }, [soundEnabled]);
+
+  // Convenience methods for common sounds
+  const playMoveSound = useCallback(() => playSound('whoosh'), [playSound]);
+  const playButtonSound = useCallback(() => playSound('tap'), [playSound]);
+  const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
+  const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
+
   return {
+    soundEnabled,
     playSound,
+    playMoveSound,
+    playButtonSound,
+    playGameOverSound,
+    playVictorySound,
     stopSound,
     stopAllSounds,
     preloadSounds,
+    toggleSound,
   };
 };
