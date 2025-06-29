@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: height * 0.07,
     color: colors.text,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
     textAlign: 'center',
     marginBottom: 30,
   },
@@ -267,20 +267,20 @@ const styles = StyleSheet.create({
   },
   rankText: {
     fontSize: height * 0.035,
-    fontFamily: 'Iowan-Old-Style',
+    fontFamily: 'System',
     color: colors.primary,
     width: 40,
   },
   nameText: {
     flex: 1,
     fontSize: height * 0.04,
-    fontFamily: 'Iowan-Old-Style',
+    fontFamily: 'System',
     color: colors.primary,
     marginRight: 10,
   },
   scoreText: {
     fontSize: height * 0.04,
-    fontFamily: 'Iowan-Old-Style',
+    fontFamily: 'System',
     color: colors.primary,
     fontWeight: '600',
   },
@@ -301,13 +301,13 @@ const styles = StyleSheet.create({
   },
   yourScoreLabel: {
     fontSize: height * 0.035,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
     color: colors.text,
     marginBottom: 5,
   },
   yourScoreValue: {
     fontSize: height * 0.05,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
     color: colors.accent,
     fontWeight: 'bold',
   },
@@ -322,13 +322,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'red',
     fontSize: 16,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
   },
   emptyText: {
     textAlign: 'center',
     color: colors.primary,
     fontSize: 18,
-    fontFamily: 'American-Typewriter',
+    fontFamily: 'System',
   },
 });
 

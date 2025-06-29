@@ -1,14 +1,33 @@
 // src/services/api.js
+// TEMPORARY MOCK API SERVICE - Replace with real API calls when backend is ready
 import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
 
-// You should update this to your new API endpoint
+// TODO: Replace with your actual API endpoint when backend is ready
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-api.com';
+
+// Mock data for development
+const MOCK_USER = {
+  id: 'mock-user-123',
+  name: 'Player',
+  device: 'mock-device',
+  token: 'mock-token-123',
+  createdAt: new Date().toISOString(),
+};
+
+const MOCK_HIGH_SCORES = [
+  { id: 1, name: 'Alice', score: 1500, difficulty: 'Hard', date: '2024-01-15' },
+  { id: 2, name: 'Bob', score: 1200, difficulty: 'Medium', date: '2024-01-14' },
+  { id: 3, name: 'Charlie', score: 900, difficulty: 'Easy', date: '2024-01-13' },
+  { id: 4, name: 'Diana', score: 800, difficulty: 'Medium', date: '2024-01-12' },
+  { id: 5, name: 'Eve', score: 700, difficulty: 'Easy', date: '2024-01-11' },
+];
 
 class ApiService {
   constructor() {
     this.deviceId = null;
     this.token = null;
+    this.isMockMode = true; // TODO: Set to false when API is ready
   }
 
   async init() {
@@ -17,9 +36,38 @@ class ApiService {
     
     // Get saved auth token
     this.token = await SecureStore.getItemAsync('authToken');
+    
+    console.log('API Service initialized in MOCK MODE');
   }
 
+  // TODO: Replace this method with real API calls when backend is ready
   async request(endpoint, options = {}) {
+    if (this.isMockMode) {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Return mock responses based on endpoint
+      if (endpoint === '/users' && options.method === 'POST') {
+        return { success: true, data: MOCK_USER };
+      }
+      
+      if (endpoint.startsWith('/users/')) {
+        return { success: true, data: MOCK_USER };
+      }
+      
+      if (endpoint.startsWith('/scores/') && !endpoint.includes('/new/')) {
+        return { success: true, data: MOCK_HIGH_SCORES };
+      }
+      
+      if (endpoint.includes('/scores/new/')) {
+        return { success: true, data: { message: 'Score submitted successfully' } };
+      }
+      
+      return { success: true, data: {} };
+    }
+    
+    // TODO: Uncomment this section when API is ready
+    /*
     const url = `${API_BASE_URL}${endpoint}`;
     
     const config = {
@@ -62,9 +110,15 @@ class ApiService {
         isNetworkError: !navigator.onLine,
       };
     }
+    */
   }
 
+  // TODO: Implement real caching when API is ready
   async getCachedData(key) {
+    if (this.isMockMode) {
+      return null; // No caching in mock mode
+    }
+    
     try {
       const cached = await SecureStore.getItemAsync(`cache_${key}`);
       if (cached) {
@@ -81,7 +135,12 @@ class ApiService {
     return null;
   }
 
+  // TODO: Implement real caching when API is ready
   async setCachedData(key, data) {
+    if (this.isMockMode) {
+      return; // No caching in mock mode
+    }
+    
     try {
       const cacheData = {
         data,
@@ -95,6 +154,8 @@ class ApiService {
 
   // Auth methods
   async login(username) {
+    console.log('Mock login for user:', username);
+    
     const result = await this.request('/users', {
       method: 'POST',
       body: JSON.stringify({
@@ -143,6 +204,8 @@ class ApiService {
       return { success: false, error: 'No user logged in' };
     }
 
+    console.log('Mock score submission:', score);
+
     const result = await this.request(`/scores/new/${this.deviceId}`, {
       method: 'POST',
       body: JSON.stringify({
@@ -159,7 +222,13 @@ class ApiService {
     return result;
   }
 
+  // TODO: Implement real score queuing when API is ready
   async queueScoreSubmission(score) {
+    if (this.isMockMode) {
+      console.log('Mock score queued:', score);
+      return;
+    }
+    
     try {
       const queuedScores = await SecureStore.getItemAsync('queuedScores');
       const scores = queuedScores ? JSON.parse(queuedScores) : [];
@@ -170,7 +239,13 @@ class ApiService {
     }
   }
 
+  // TODO: Implement real score syncing when API is ready
   async syncQueuedScores() {
+    if (this.isMockMode) {
+      console.log('Mock score sync completed');
+      return;
+    }
+    
     try {
       const queuedScores = await SecureStore.getItemAsync('queuedScores');
       if (!queuedScores) return;

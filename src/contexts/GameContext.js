@@ -121,7 +121,7 @@ export const GameProvider = ({ children }) => {
     
     // Check if score makes it to top 5
     const topScores = [...(updatedHighScores.highScores || [])];
-    topScores.push([userName || 'Anonymous', finalScore]);
+    topScores.push(['Anonymous', finalScore]);
     topScores.sort((a, b) => b[1] - a[1]);
     updatedHighScores.highScores = topScores.slice(0, 5);
     
