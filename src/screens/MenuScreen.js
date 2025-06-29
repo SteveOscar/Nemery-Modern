@@ -4,11 +4,18 @@ import {
   View,
   Text,
   StyleSheet,
-  Animated,
   Dimensions,
   Image,
-  Easing,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+  withDelay,
+  withRepeat,
+  Easing,
+} from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { useGame } from '../contexts/GameContext';
 import { useSound } from '../contexts/SoundContext';
@@ -25,12 +32,12 @@ const MenuScreen = () => {
   const { playSound, playRandomSound } = useSound();
   const { username, isAuthenticated } = useUser();
   
-  // Animation values
+  // Reanimated shared values
   const fadeAnims = useRef(
-    Array(5).fill().map(() => new Animated.Value(0))
+    Array(5).fill().map(() => useSharedValue(0))
   ).current;
-  const iconRotation = useRef(new Animated.Value(0)).current;
-  const iconPerspective = useRef(new Animated.Value(0)).current;
+  const iconScale = useSharedValue(1);
+  const iconOpacity = useSharedValue(0.7);
   
   const [helpText] = useState('???');
 
@@ -43,12 +50,13 @@ const MenuScreen = () => {
 
     // Start fade animations
     fadeAnims.forEach((anim, index) => {
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 700 - (index * 100),
-        delay: index * 150,
-        useNativeDriver: true,
-      }).start();
+      anim.value = withDelay(
+        index * 150,
+        withTiming(1, {
+          duration: 700 - (index * 100),
+          easing: Easing.out(Easing.ease),
+        })
+      );
     });
 
     // Start icon animation
@@ -57,40 +65,40 @@ const MenuScreen = () => {
 
   const startIconAnimation = () => {
     const animateIcon = () => {
-      const duration = Math.random() * 2000 + 6000;
-      const delay = Math.random() * 2000 + 500;
+      const duration = Math.random() * 2000 + 4000;
+      const delay = Math.random() * 2000 + 1000;
       
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.parallel([
-          Animated.timing(iconRotation, {
-            toValue: 1,
-            duration,
+      // Create a flip effect using scale and opacity
+      iconScale.value = withDelay(
+        delay,
+        withSequence(
+          withTiming(0.3, {
+            duration: duration / 2,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
           }),
-          Animated.timing(iconPerspective, {
-            toValue: 1,
-            duration,
+          withTiming(1, {
+            duration: duration / 2,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(iconRotation, {
-            toValue: 0,
-            duration,
+          })
+        )
+      );
+      
+      iconOpacity.value = withDelay(
+        delay,
+        withSequence(
+          withTiming(0.2, {
+            duration: duration / 2,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
           }),
-          Animated.timing(iconPerspective, {
-            toValue: 0,
-            duration,
+          withTiming(0.7, {
+            duration: duration / 2,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-        ]),
-      ]).start(() => animateIcon());
+          })
+        )
+      );
+      
+      // Schedule next animation
+      setTimeout(animateIcon, delay + duration + 2000);
     };
     
     animateIcon();
@@ -129,39 +137,40 @@ const MenuScreen = () => {
     }
   };
 
-  const rotateY = iconRotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+  // Reanimated animated styles
+  const iconAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: iconScale.value },
+      ],
+      opacity: iconOpacity.value,
+    };
   });
 
-  const perspective = iconPerspective.interpolate({
-    inputRange: [0, 1],
-    outputRange: [width * 0.15, width * 0.3],
-  });
+  const fadeAnimatedStyles = fadeAnims.map((anim, index) => 
+    useAnimatedStyle(() => ({
+      opacity: anim.value,
+    }))
+  );
 
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <Animated.Image
-          source={require('../../assets/images/icon_logo.png')}
-          style={[
-            styles.icon,
-            {
-              transform: [
-                { perspective },
-                { rotateY },
-              ],
-            },
-          ]}
-        />
+        <Animated.View style={[styles.iconWrapper, iconAnimatedStyle]}>
+          <Image
+            source={require('../../assets/images/icon_logo.png')}
+            style={styles.icon}
+            resizeMode="contain"
+          />
+        </Animated.View>
       </View>
 
       <View style={styles.menuContainer}>
-        <Animated.View style={{ opacity: fadeAnims[0] }}>
+        <Animated.View style={fadeAnimatedStyles[0]}>
           <Logo letters="NEMERY" />
         </Animated.View>
 
-        <Animated.View style={[styles.buttonWrapper, { opacity: fadeAnims[0] }]}>
+        <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[0]]}>
           <Button
             text="Start"
             onPress={handleStartGame}
@@ -169,7 +178,7 @@ const MenuScreen = () => {
           />
         </Animated.View>
 
-        <Animated.View style={[styles.buttonWrapper, { opacity: fadeAnims[1] }]}>
+        <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[1]]}>
           <Button
             text={`Difficulty: ${getDifficultyEmoji()}`}
             onPress={handleDifficultyChange}
@@ -177,7 +186,7 @@ const MenuScreen = () => {
           />
         </Animated.View>
 
-        <Animated.View style={[styles.buttonWrapper, { opacity: fadeAnims[2] }]}>
+        <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[2]]}>
           <Button
             text="High Scores"
             onPress={handleHighScores}
@@ -185,7 +194,7 @@ const MenuScreen = () => {
           />
         </Animated.View>
 
-        <Animated.View style={[styles.buttonWrapper, { opacity: fadeAnims[3] }]}>
+        <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[3]]}>
           <Button
             text={helpText}
             onPress={handleHelp}
@@ -193,7 +202,7 @@ const MenuScreen = () => {
           />
         </Animated.View>
 
-        <Animated.View style={[styles.buttonWrapper, { opacity: fadeAnims[4] }]}>
+        <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[4]]}>
           <Button
             text={`Sound: ${soundEnabled ? 'ON' : 'OFF'}`}
             onPress={toggleSound}
@@ -212,7 +221,7 @@ const MenuScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -221,6 +230,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+  },
+  iconWrapper: {
+    width: width * 0.25,
+    height: width * 0.25,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   icon: {
     width: width * 0.25,
