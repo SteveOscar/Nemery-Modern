@@ -1,75 +1,97 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useCallback } from 'react';
+import {
+  Text,
+  StyleSheet,
+  Pressable,
+  Dimensions,
+} from 'react-native';
+import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
 
-const Button = ({ 
-  title, 
-  onPress, 
-  style, 
-  textStyle, 
-  disabled = false,
-  variant = 'primary' 
-}) => {
+const { height } = Dimensions.get('window');
+
+
+const Button = ({ text, onPress, sound = true, style, textStyle }) => {
+  const playButtonSound = useCallback(async () => {
+    if (!sound) return;
+    
+    try {
+      const { sound: audioSound } = await Audio.Sound.createAsync(
+        require('../assets/sounds/button.mp3'),
+        { 
+          shouldPlay: true,
+          volume: 0.2,
+        }
+      );
+      
+      // Clean up sound after playing
+      audioSound.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) {
+          audioSound.unloadAsync();
+        }
+      });
+    } catch (error) {
+      console.warn('Error playing button sound:', error);
+    }
+  }, [sound]);
+
+  const handlePress = useCallback(async () => {
+    // Haptic feedback for better UX
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playButtonSound();
+    onPress?.();
+  }, [onPress, playButtonSound]);
+
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        styles[variant],
-        disabled && styles.disabled,
-        style
+    <Pressable
+      style={({ pressed }) => [
+        styles.container,
+        pressed && styles.pressed,
+        style,
       ]}
-      onPress={onPress}
-      disabled={disabled}
-      activeOpacity={0.7}
+      onPress={handlePress}
+      android_ripple={{ color: colors.accent }}
     >
-      <Text style={[styles.text, styles[`${variant}Text`], textStyle]}>
-        {title}
+      <Text 
+        style={[styles.buttonText, textStyle]} 
+        allowFontScaling={false}
+      >
+        {text}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
+  container: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    marginBottom: height * 0.015,
+    height: height * 0.07,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
+    paddingHorizontal: 20,
+    // Modern shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    // Modern shadow for Android
+    elevation: 5,
   },
-  primary: {
-    backgroundColor: '#007AFF',
+  pressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
   },
-  secondary: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#007AFF',
-  },
-  success: {
-    backgroundColor: '#34C759',
-  },
-  danger: {
-    backgroundColor: '#FF3B30',
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  text: {
-    fontSize: 16,
+  buttonText: {
+    fontSize: height * 0.045,
+    color: colors.secondary,
+    fontFamily: 'American Typewriter',
     fontWeight: '600',
-  },
-  primaryText: {
-    color: '#FFFFFF',
-  },
-  secondaryText: {
-    color: '#007AFF',
-  },
-  successText: {
-    color: '#FFFFFF',
-  },
-  dangerText: {
-    color: '#FFFFFF',
   },
 });
 
-export default Button; 
+export default Button;
