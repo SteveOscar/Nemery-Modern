@@ -1,253 +1,461 @@
 // src/screens/GameScreen.js
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   Animated,
-  Pressable,
+  Easing,
+  Image,
+  Dimensions,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
-import { useGame } from '../contexts/GameContext';
+import { colors } from '../constants/colors';
 import { useSound } from '../hooks/useSound';
 
 const { width, height } = Dimensions.get('window');
-
 const CELL_SIZE = Math.floor(width * 0.2);
 const CELL_PADDING = Math.floor(CELL_SIZE * 0.07);
-const BORDER_RADIUS = CELL_PADDING;
+const BORDER_RADIUS = CELL_PADDING * 1;
 const TILE_SIZE = CELL_SIZE - CELL_PADDING * 2;
-const LETTER_SIZE = Math.floor(TILE_SIZE * 0.7);
+const LETTER_SIZE = Math.floor(TILE_SIZE * 0.70);
 
-const GameScreen = () => {
-  const navigation = useNavigation();
-  const { 
-    level, 
-    score, 
-    difficulty, 
-    updateScore, 
-    endGame, 
-    nextLevel,
-    getCurrentConfig 
-  } = useGame();
-  const { playSound } = useSound();
-  
-  const config = getCurrentConfig();
-  const [cols, rows] = config.gridSize;
-  const totalTiles = cols * rows;
-  
-  // Game state
-  const [hiddenNumbers, setHiddenNumbers] = useState([]);
-  const [revealedTiles, setRevealedTiles] = useState([]);
-  const [selectedTiles, setSelectedTiles] = useState([]);
-  const [previousNumber, setPreviousNumber] = useState(-1);
-  const [gamePhase, setGamePhase] = useState('showing'); // 'showing', 'hiding', 'playing', 'ended'
-  const [timerProgress] = useState(new Animated.Value(1));
-  
-  // Refs for animations
-  const tileAnimations = useRef([]);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  
-  // Initialize tile animations
-  useEffect(() => {
-    tileAnimations.current = Array(totalTiles)
-      .fill()
-      .map(() => new Animated.Value(0));
-  }, [totalTiles]);
-  
-  // Generate random numbers for tiles
-  const generateNumbers = useCallback(() => {
-    const max = typeof config.maxNumber === 'function' 
-      ? config.maxNumber(level) 
-      : config.maxNumber;
-    
-    const numbers = [];
-    while (numbers.length < totalTiles) {
-      const num = Math.floor(Math.random() * max);
-      if (!numbers.includes(num)) {
-        numbers.push(num);
-      }
+function maxNumber(difficulty, level) {
+  if (difficulty === 'Extreme') return Math.min(16 * level, 99);
+  if (difficulty === 'Hard') return 12;
+  if (difficulty === 'Medium') return 9;
+  if (difficulty === 'Easy') return Math.min(6 * level, 99);
+  return 29;
+}
+
+function generateNumbers(size, difficulty, level) {
+  const length = size[0] * size[1];
+  const max = maxNumber(difficulty, level);
+  let random = [];
+  for (let i = 0; i < length; i++) {
+    let temp = Math.floor(Math.random() * max);
+    if (random.indexOf(temp) === -1) {
+      random.push(temp);
+    } else {
+      i--;
     }
-    return numbers;
-  }, [config, level, totalTiles]);
-  
-  // Initialize game
+  }
+  return random;
+}
+
+function timeAdjustment(difficulty) {
+  if (difficulty === 'Easy') return 1.5;
+  if (difficulty === 'Medium') return 2;
+  if (difficulty === 'Hard') return 3;
+  if (difficulty === 'Extreme') return 3;
+  return 2;
+}
+
+function gameStartDelay(difficulty, difficultyFactor) {
+  if (difficulty === 'Easy') return difficultyFactor;
+  if (difficulty === 'Medium') return difficultyFactor - 0.2;
+  if (difficulty === 'Hard') return difficultyFactor - 0.5;
+  if (difficulty === 'Extreme') return difficultyFactor - 0.3;
+  return difficultyFactor;
+}
+
+function levelTimeAdjustment(baseTime, level) {
+  let result = 100;
+  for (let i = 0; i < level; i++) {
+    result = result * 0.9;
+  }
+  return result / 100;
+}
+
+const GameScreen = ({
+  size = [4, 4],
+  difficulty = 'Easy',
+  level = 1,
+  sound = true,
+  updateScore = () => {},
+  deliverVerdict = () => {},
+  endGame = () => {},
+}) => {
+  // Animation refs
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const progress = useRef(new Animated.Value(width)).current;
+  const timerHeight = useRef(new Animated.Value(0)).current;
+  const timerText = useRef(new Animated.Value(0)).current;
+
+  // Board state
+  const [boardTilt, setBoardTilt] = useState(() =>
+    Array(size[0] * size[1])
+      .fill(0)
+      .map(() => new Animated.Value(0))
+  );
+  const [prevSelection, setPrevSelection] = useState('');
+  const [numbers, setNumbers] = useState(Array(size[0] * size[1]).fill(''));
+  const [hiddenLetters, setHiddenLetters] = useState(() => generateNumbers(size, difficulty, level));
+  const [beenClicked, setBeenClicked] = useState([]);
+  const [inPlay, setInPlay] = useState(false);
+
+  // Sound
+  const {
+    playMoveSound,
+    playButtonSound,
+    playGameOverSound,
+    playVictorySound,
+    playSound,
+  } = useSound();
+
+  // Show/hide tile helpers
+  const initialSingleTileShow = useCallback(
+    (id) => {
+      if (beenClicked.indexOf(id) !== -1) return;
+      const tilt = boardTilt[id];
+      tilt.setValue(1);
+      Animated.timing(tilt, {
+        toValue: 0,
+        duration: 900,
+        easing: Easing.spring,
+        useNativeDriver: false,
+      }).start(() => {
+        setNumbers((prev) => {
+          const next = [...prev];
+          next[id] = hiddenLetters[id];
+          return next;
+        });
+      });
+    },
+    [beenClicked, boardTilt, hiddenLetters]
+  );
+
+  const tileHide = useCallback(
+    (id) => {
+      const tilt = boardTilt[id];
+      tilt.setValue(0);
+      Animated.timing(tilt, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.spring,
+        useNativeDriver: false,
+      }).start(() => {
+        setNumbers((prev) => {
+          const next = [...prev];
+          next[id] = '';
+          return next;
+        });
+      });
+    },
+    [boardTilt]
+  );
+
+  // Show/hide tiles in sequence
+  const showTiles = useCallback(
+    (shouldHide) => {
+      setTimeout(() => {
+        for (let i = 0; i < size[0]; i++) {
+          for (let j = 0; j < size[1]; j++) {
+            initialSingleTileShow(i * size[1] + j);
+          }
+        }
+      }, 500);
+      setTimeout(() => {
+        for (let i = size[0]; i < size[0] * 2; i++) {
+          for (let j = 0; j < size[1]; j++) {
+            initialSingleTileShow(i * size[1] + j);
+          }
+        }
+      }, 1200);
+      setTimeout(() => {
+        if (size[1] < 3) return;
+        for (let i = size[0] * 2; i < size[0] * 3; i++) {
+          for (let j = 0; j < size[1]; j++) {
+            initialSingleTileShow(i * size[1] + j);
+          }
+        }
+      }, 1700);
+      setTimeout(() => {
+        if (size[1] < 4) return;
+        for (let i = size[0] * 3; i < size[0] * 4; i++) {
+          for (let j = 0; j < size[1]; j++) {
+            initialSingleTileShow(i * size[1] + j);
+          }
+        }
+      }, 2200);
+      if (shouldHide) hideTiles();
+    },
+    [size, initialSingleTileShow]
+  );
+
+  const hideTiles = useCallback(() => {
+    const difficultyFactor = timeAdjustment(difficulty) * 1.3;
+    setTimeout(() => {
+      Animated.timing(timerText, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: false,
+      }).start();
+      Animated.timing(timerHeight, {
+        toValue: height * 0.05,
+        duration: 1800,
+        useNativeDriver: false,
+      }).start();
+    }, 2500 * difficultyFactor);
+    setTimeout(() => {
+      for (let i = 0; i < size[0]; i++) {
+        for (let j = 0; j < size[1]; j++) {
+          tileHide(i * size[1] + j);
+        }
+      }
+    }, 2500 * difficultyFactor);
+    setTimeout(() => {
+      for (let i = size[0]; i < size[0] * 2; i++) {
+        for (let j = 0; j < size[1]; j++) {
+          tileHide(i * size[1] + j);
+        }
+      }
+    }, 2700 * difficultyFactor);
+    setTimeout(() => {
+      if (size[1] < 3) return;
+      for (let i = size[0] * 2; i < size[0] * 3; i++) {
+        for (let j = 0; j < size[1]; j++) {
+          tileHide(i * size[1] + j);
+        }
+      }
+    }, 2900 * difficultyFactor);
+    setTimeout(() => {
+      if (size[1] < 4) return;
+      for (let i = size[0] * 3; i < size[0] * 4; i++) {
+        for (let j = 0; j < size[1]; j++) {
+          tileHide(i * size[1] + j);
+        }
+      }
+    }, 3000 * difficultyFactor);
+    setTimeout(() => {
+      setInPlay(true);
+      startTimer();
+    }, 3500 * gameStartDelay(difficulty, difficultyFactor));
+  }, [difficulty, size, tileHide, timerHeight, timerText]);
+
+  // Timer logic
+  const startTimer = useCallback(() => {
+    Animated.timing(timerText, {
+      toValue: 0,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start();
+    const baseTime = 3500;
+    const difficultyFactor = timeAdjustment(difficulty) * 1.2;
+    const timerDuration = baseTime * difficultyFactor * levelTimeAdjustment(baseTime, level);
+    Animated.timing(progress, {
+      toValue: 0,
+      duration: timerDuration,
+      useNativeDriver: false,
+    }).start();
+    setTimeout(() => {
+      handleTimerEnd();
+    }, timerDuration);
+  }, [difficulty, level, progress, timerText]);
+
+  // On mount: fade in and show tiles
   useEffect(() => {
-    startNewGame();
-  }, []);
-  
-  const startNewGame = () => {
-    setHiddenNumbers(generateNumbers());
-    setRevealedTiles([]);
-    setSelectedTiles([]);
-    setPreviousNumber(-1);
-    setGamePhase('showing');
-    
-    // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1300,
-      useNativeDriver: true,
-    }).start();
-    
-    // Show tiles sequence
-    showTilesSequence();
-  };
-  
-  const showTilesSequence = async () => {
-    await playSound('whoosh2');
-    
-    // Show tiles row by row
-    for (let row = 0; row < rows; row++) {
-      setTimeout(() => {
-        for (let col = 0; col < cols; col++) {
-          const index = row * cols + col;
-          animateTile(index, 0, 900);
-        }
-      }, row * 700);
-    }
-    
-    // Hide tiles after showing
-    setTimeout(() => {
-      hideTilesSequence();
-    }, 2500 * config.timeMultiplier);
-  };
-  
-  const hideTilesSequence = async () => {
-    setGamePhase('hiding');
-    await playSound('whoosh');
-    
-    // Hide tiles row by row
-    for (let row = 0; row < rows; row++) {
-      setTimeout(() => {
-        for (let col = 0; col < cols; col++) {
-          const index = row * cols + col;
-          animateTile(index, 1, 500);
-        }
-      }, row * 200);
-    }
-    
-    // Start game after hiding
-    setTimeout(() => {
-      setGamePhase('playing');
-      startTimer();
-    }, 1000);
-  };
-  
-  const animateTile = (index, toValue, duration) => {
-    Animated.timing(tileAnimations.current[index], {
-      toValue,
-      duration,
-      useNativeDriver: true,
-    }).start();
-  };
-  
-  const startTimer = () => {
-    const duration = 3500 * config.timeMultiplier * (0.9 ** (level - 1));
-    
-    playSound('beep');
-    
-    Animated.timing(timerProgress, {
-      toValue: 0,
-      duration,
       useNativeDriver: false,
-    }).start(() => {
-      // Timer ended
-      if (gamePhase === 'playing') {
-        handleGameOver(false);
+    }).start();
+    showTiles(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Tile click logic
+  const alreadyClicked = useCallback(
+    (id) => {
+      if (beenClicked.indexOf(id) !== -1) return true;
+      setBeenClicked((prev) => [...prev, id]);
+      return false;
+    },
+    [beenClicked]
+  );
+
+  const clickTile = useCallback(
+    (id) => {
+      if (!inPlay) return;
+      if (alreadyClicked(id)) return;
+      playButtonSound();
+      setTimeout(() => {
+        setNumbers((prev) => {
+          const next = [...prev];
+          next[id] = hiddenLetters[id];
+          return next;
+        });
+        checkSelection(id);
+      }, 200);
+      const tilt = boardTilt[id];
+      tilt.setValue(1);
+      Animated.timing(tilt, {
+        toValue: 2,
+        duration: 300,
+        easing: Easing.spring,
+        useNativeDriver: false,
+      }).start();
+    },
+    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, boardTilt]
+  );
+
+  const checkSelection = useCallback(
+    (id) => {
+      const selected = numbers[id];
+      if (selected >= prevSelection) {
+        setPrevSelection(selected);
+        updateScore(numbers.filter((n) => n !== '').length);
+      } else {
+        playGameOverSound();
+        deliverVerdict(false);
+        setInPlay(false);
+        showTiles(false);
+        endGame();
       }
-    });
-  };
-  
-  const handleTilePress = async (index) => {
-    if (gamePhase !== 'playing' || selectedTiles.includes(index)) {
-      return;
-    }
-    
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound('tap');
-    
-    const number = hiddenNumbers[index];
-    
-    // Reveal tile
-    setRevealedTiles([...revealedTiles, index]);
-    setSelectedTiles([...selectedTiles, index]);
-    
-    // Animate tile
-    animateTile(index, 2, 300);
-    
-    // Check if selection is valid
-    if (number >= previousNumber) {
-      setPreviousNumber(number);
-      updateScore(selectedTiles.length + 1);
-      
-      // Check if level complete
-      if (selectedTiles.length + 1 === totalTiles) {
-        handleLevelComplete();
+    },
+    [numbers, prevSelection, updateScore, deliverVerdict, endGame, playGameOverSound, showTiles]
+  );
+
+  // Timer end
+  const handleTimerEnd = useCallback(() => {
+    const length = size[0] * size[1];
+    if (!inPlay || beenClicked.length === length) return;
+    playGameOverSound();
+    deliverVerdict(false);
+    setInPlay(false);
+    showTiles(false);
+    endGame();
+  }, [inPlay, beenClicked, size, playGameOverSound, deliverVerdict, showTiles, endGame]);
+
+  // Render tiles
+  const renderTiles = () => {
+    let result = [];
+    for (let row = 0; row < size[1]; row++) {
+      for (let col = 0; col < size[0]; col++) {
+        let id = row * size[0] + col;
+        let letter = numbers[id];
+        let tilt = boardTilt[id].interpolate({
+          inputRange: [0, 1, 2],
+          outputRange: ['0deg', '-180deg', '-360deg'],
+        });
+        let style = {
+          left: col * CELL_SIZE + CELL_PADDING,
+          top: row * CELL_SIZE + CELL_PADDING,
+          transform: [
+            { perspective: CELL_SIZE * 0.95 },
+            { rotateX: tilt },
+          ],
+        };
+        result.push(
+          <Animated.View
+            key={id}
+            style={[styles.tile, style]}
+            onStartShouldSetResponder={() => {
+              clickTile(id);
+              return true;
+            }}
+          >
+            <Text allowFontScaling={false} style={styles.letter}>
+              {letter}
+            </Text>
+          </Animated.View>
+        );
       }
-    } else {
-      // Wrong selection
-      handleGameOver(false);
     }
+    return result;
   };
-  
-  const handleLevelComplete = async () => {
-    setGamePhase('ended');
-    await playSound('bell');
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
-    setTimeout(() => {
-      nextLevel();
-      navigation.navigate('Transition');
-    }, 1000);
-  };
-  
-  const handleGameOver = async (timeout) => {
-    setGamePhase('ended');
-    await playSound('buzzer');
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    
-    // Show all tiles
-    showTilesSequence();
-    
-    setTimeout(() => {
-      endGame(score);
-      navigation.navigate('Menu');
-    }, 3000);
-  };
-  
-  const renderTile = (index) => {
-    const row = Math.floor(index / cols);
-    const col = index % cols;
-    const number = hiddenNumbers[index];
-    const isRevealed = revealedTiles.includes(index) || gamePhase === 'showing';
-    
-    const rotateX = tileAnimations.current[index]?.interpolate({
-      inputRange: [0, 1, 2],
-      outputRange: ['0deg', '-180deg', '-360deg'],
-    }) || '0deg';
-    
-    return (
-      <Pressable
-        key={index}
-        onPress={() => handleTilePress(index)}
-        style={({ pressed }) => ({
-          opacity: pressed ? 0.8 : 1,
-        })}
-      >
+
+  // Main render
+  const dimensionWidth = CELL_SIZE * size[0];
+  const dimensionHeight = CELL_SIZE * size[1];
+  return (
+    <View style={{ width: width, flex: 1 }}>
+      <Image
+        source={require('../../assets/images/backgroundBottom.png')}
+        style={styles.backgroundBottom}
+        resizeMode="cover"
+      />
+      <Image
+        source={require('../../assets/images/backgroundTop.png')}
+        style={styles.backgroundTop}
+        resizeMode="cover"
+      />
+      <Animated.View style={{ opacity: fadeAnim }}>
         <Animated.View
           style={[
-            styles.tile,
-            {
-              left: col * CELL_SIZE + CELL_PADDING,
-              top: row * CELL_SIZE + CELL_PADDING,
-              transform: [
-                { perspective: CELL_SIZE * 0.95 },
-                { rotateX },
-              ],
-            },
+            styles.timer,
+            { height: timerHeight, width: progress },
           ]}
         >
-          <Text style={
+          <Animated.Text style={[styles.timerText, { opacity: timerText }]}>TIMER</Animated.Text>
+        </Animated.View>
+        <View
+          style={{
+            width: dimensionWidth,
+            height: dimensionHeight,
+            alignSelf: 'center',
+          }}
+        >
+          {renderTiles()}
+        </View>
+      </Animated.View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  tile: {
+    position: 'absolute',
+    width: TILE_SIZE,
+    height: TILE_SIZE,
+    borderRadius: BORDER_RADIUS,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+    borderWidth: 3,
+  },
+  letter: {
+    color: colors.secondary,
+    fontSize: LETTER_SIZE,
+    backgroundColor: 'transparent',
+    fontFamily: 'American Typewriter',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 1, height: 1 },
+  },
+  timer: {
+    flex: 1,
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    left: 0,
+    right: 0,
+    top: -(height * 0.2),
+    backgroundColor: colors.secondaryLight,
+    borderRadius: 5,
+    opacity: 0.9,
+  },
+  timerText: {
+    color: colors.secondary,
+    backgroundColor: 'transparent',
+    fontFamily: 'American Typewriter',
+    fontSize: width * 0.05,
+    textShadowColor: colors.primary,
+    textShadowOffset: { width: 1, height: 1 },
+  },
+  backgroundBottom: {
+    position: 'absolute',
+    width: width,
+    left: 0,
+    right: 0,
+    bottom: height * -0.2,
+  },
+  backgroundTop: {
+    position: 'absolute',
+    width: width,
+    left: 0,
+    right: 0,
+    top: height * -0.3,
+  },
+});
+
+export default GameScreen;

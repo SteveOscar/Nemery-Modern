@@ -235,4 +235,70 @@ export const SoundProvider = ({ children }) => {
               volume: (SOUND_VOLUMES[soundName] || 0.5) * masterVolume,
             }
           );
-          loade
+          loadedSounds.current[soundName] = sound;
+        } catch (error) {
+          console.error(`Error preloading sound ${soundName}:`, error);
+        }
+      }
+    });
+    
+    await Promise.all(promises);
+  }, [masterVolume]);
+
+  const toggleSound = useCallback(async () => {
+    const newValue = !soundEnabled;
+    setSoundEnabled(newValue);
+    await SecureStore.setItemAsync('soundEnabled', String(newValue));
+    
+    // Stop all sounds when disabling
+    if (!newValue) {
+      await stopAllSounds();
+    }
+  }, [soundEnabled, stopAllSounds]);
+
+  const setVolume = useCallback(async (volume) => {
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    setMasterVolume(clampedVolume);
+    await SecureStore.setItemAsync('masterVolume', String(clampedVolume));
+    
+    // Update volume for all loaded sounds
+    const promises = Object.values(loadedSounds.current).map(async (sound) => {
+      try {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded) {
+          await sound.setVolumeAsync(status.volume * clampedVolume);
+        }
+      } catch (error) {
+        console.warn('Error updating sound volume:', error);
+      }
+    });
+    
+    await Promise.all(promises);
+  }, []);
+
+  const value = {
+    // State
+    soundEnabled,
+    masterVolume,
+    isLoading,
+    
+    // Actions
+    playSound,
+    playRandomSound,
+    playSequence,
+    stopSound,
+    stopAllSounds,
+    preloadSounds,
+    toggleSound,
+    setVolume,
+    
+    // Constants
+    SOUND_NAMES: Object.keys(SOUND_FILES),
+  };
+
+  return (
+    <SoundContext.Provider value={value}>
+      {children}
+    </SoundContext.Provider>
+  );
+};
