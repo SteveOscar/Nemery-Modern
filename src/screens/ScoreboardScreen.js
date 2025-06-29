@@ -1,208 +1,335 @@
-import React, { useState, useEffect } from 'react';
+// src/screens/ScoreboardScreen.js
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
-  FlatList,
+  Animated,
+  ScrollView,
   ActivityIndicator,
+  RefreshControl,
+  Dimensions,
+  Easing,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useGame } from '../contexts/GameContext';
+import { useSound } from '../contexts/SoundContext';
+import { useUser } from '../contexts/UserContext';
 import Button from '../components/Button';
 import { colors } from '../constants/colors';
+import apiService from '../services/api';
 
-const ScoreboardScreen = ({ onBack, apiService }) => {
-  const [scores, setScores] = useState([]);
-  const [loading, setLoading] = useState(true);
+const { width, height } = Dimensions.get('window');
+
+const ScoreboardScreen = () => {
+  const navigation = useNavigation();
+  const { highScores, saveHighScores } = useGame();
+  const { playSound } = useSound();
+  const { username } = useUser();
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Animation values
+  const fadeAnim1 = useRef(new Animated.Value(0)).current;
+  const fadeAnim2 = useRef(new Animated.Value(0)).current;
+  const fadeAnim3 = useRef(new Animated.Value(0)).current;
+  const starRotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Start animations
+    Animated.parallel([
+      Animated.timing(fadeAnim1, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim2, {
+        toValue: 1,
+        duration: 1000,
+        delay: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim3, {
+        toValue: 1,
+        duration: 1000,
+        delay: 1000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Start star rotation
+    startStarAnimation();
+    
+    // Load fresh scores
     loadScores();
   }, []);
 
-  const loadScores = async () => {
+  const startStarAnimation = () => {
+    Animated.loop(
+      Animated.timing(starRotation, {
+        toValue: 1,
+        duration: 10000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  const loadScores = async (refresh = false) => {
+    if (refresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
+    setError(null);
+
     try {
-      setLoading(true);
-      const data = await apiService.getScoreboard();
-      setScores(data);
+      const result = await apiService.getHighScores();
+      
+      if (result.success) {
+        await saveHighScores(result.data);
+      } else if (!result.fromCache) {
+        setError('Unable to load latest scores');
+      }
     } catch (err) {
-      setError('Failed to load scoreboard');
-      console.error('Scoreboard error:', err);
+      console.error('Error loading scores:', err);
+      setError('Failed to load scores');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
-  const renderScoreItem = ({ item, index }) => (
-    <View style={styles.scoreItem}>
-      <View style={styles.rankContainer}>
-        <Text style={styles.rank}>{index + 1}</Text>
-      </View>
-      <View style={styles.playerInfo}>
-        <Text style={styles.playerName}>{item.username}</Text>
-        <Text style={styles.playerScore}>{item.score}</Text>
-      </View>
-      <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
-    </View>
-  );
+  const handleBack = async () => {
+    await playSound('whoosh');
+    navigation.goBack();
+  };
 
-  if (loading) {
+  const renderHighScore = (score, index) => {
+    const [name, points] = score;
+    const isCurrentUser = name === username;
+    const medal = getMedal(index);
+
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading scores...</Text>
-        </View>
-      </SafeAreaView>
+      <View key={index} style={styles.scoreRow}>
+        <Text style={styles.rankText} allowFontScaling={false}>
+          {medal || `${index + 1}.`}
+        </Text>
+        <Text 
+          style={[
+            styles.nameText, 
+            isCurrentUser && styles.currentUserText
+          ]} 
+          allowFontScaling={false}
+          numberOfLines={1}
+        >
+          {name}
+        </Text>
+        <Text 
+          style={[
+            styles.scoreText,
+            isCurrentUser && styles.currentUserText
+          ]} 
+          allowFontScaling={false}
+        >
+          {points}
+        </Text>
+      </View>
     );
-  }
+  };
+
+  const getMedal = (index) => {
+    switch (index) {
+      case 0: return '🥇';
+      case 1: return '🥈';
+      case 2: return '🥉';
+      default: return null;
+    }
+  };
+
+  const rotate = starRotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const userScore = highScores?.userScore || 0;
+  const topScores = highScores?.highScores || [];
+  const sortedScores = [...topScores].sort((a, b) => b[1] - a[1]).slice(0, 10);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Button
-          title="← Back"
-          onPress={onBack}
-          variant="secondary"
-          style={styles.backButton}
-        />
-        <Text style={styles.title}>Scoreboard</Text>
-        <View style={styles.placeholder} />
-      </View>
-
-      {error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <Button
-            title="Retry"
-            onPress={loadScores}
-            style={styles.retryButton}
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={() => loadScores(true)}
+            tintColor={colors.primary}
           />
+        }
+      >
+        <View style={styles.starContainer}>
+          <Animated.Text
+            style={[
+              styles.star,
+              { transform: [{ rotate }] }
+            ]}
+          >
+            ⭐
+          </Animated.Text>
         </View>
-      ) : (
-        <FlatList
-          data={scores}
-          renderItem={renderScoreItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No scores yet</Text>
-              <Text style={styles.emptySubtext}>Be the first to play!</Text>
-            </View>
-          }
-        />
-      )}
-    </SafeAreaView>
+
+        <Animated.View style={{ opacity: fadeAnim1 }}>
+          <Text style={styles.title} allowFontScaling={false}>
+            The Legends
+          </Text>
+        </Animated.View>
+
+        <Animated.View style={[styles.scoresContainer, { opacity: fadeAnim2 }]}>
+          {isLoading ? (
+            <ActivityIndicator size="large" color={colors.primary} />
+          ) : error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : sortedScores.length > 0 ? (
+            sortedScores.map((score, index) => renderHighScore(score, index))
+          ) : (
+            <Text style={styles.emptyText}>No scores yet!</Text>
+          )}
+        </Animated.View>
+
+        <Animated.View style={[styles.userScoreContainer, { opacity: fadeAnim2 }]}>
+          <View style={styles.divider} />
+          <Text style={styles.yourScoreLabel} allowFontScaling={false}>
+            Your Best:
+          </Text>
+          <Text style={styles.yourScoreValue} allowFontScaling={false}>
+            {userScore}
+          </Text>
+        </Animated.View>
+
+        <Animated.View style={[styles.buttonContainer, { opacity: fadeAnim3 }]}>
+          <Button
+            text="← ← ←"
+            onPress={handleBack}
+            style={styles.backButton}
+          />
+        </Animated.View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.secondary,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    minWidth: 80,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  placeholder: {
-    width: 80,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  scrollContent: {
+    flexGrow: 1,
+    paddingVertical: 40,
     paddingHorizontal: 20,
   },
-  errorText: {
-    fontSize: 16,
-    color: colors.error,
-    textAlign: 'center',
+  starContainer: {
+    alignItems: 'center',
     marginBottom: 20,
   },
-  retryButton: {
-    minWidth: 120,
+  star: {
+    fontSize: width * 0.25,
+    opacity: 0.9,
   },
-  listContainer: {
-    padding: 20,
+  title: {
+    fontSize: height * 0.07,
+    color: colors.text,
+    fontFamily: 'American-Typewriter',
+    textAlign: 'center',
+    marginBottom: 30,
   },
-  scoreItem: {
+  scoresContainer: {
+    minHeight: 300,
+    justifyContent: 'center',
+  },
+  scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: 'white',
+    marginBottom: 8,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  rankContainer: {
+  rankText: {
+    fontSize: height * 0.035,
+    fontFamily: 'Iowan-Old-Style',
+    color: colors.primary,
     width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
   },
-  rank: {
-    color: colors.white,
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  playerInfo: {
+  nameText: {
     flex: 1,
+    fontSize: height * 0.04,
+    fontFamily: 'Iowan-Old-Style',
+    color: colors.primary,
+    marginRight: 10,
   },
-  playerName: {
-    fontSize: 16,
+  scoreText: {
+    fontSize: height * 0.04,
+    fontFamily: 'Iowan-Old-Style',
+    color: colors.primary,
     fontWeight: '600',
-    color: colors.text,
-    marginBottom: 4,
   },
-  playerScore: {
-    fontSize: 14,
-    color: colors.textSecondary,
+  currentUserText: {
+    color: colors.accent,
+    fontWeight: 'bold',
   },
-  date: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  emptyContainer: {
+  userScoreContainer: {
+    marginTop: 30,
     alignItems: 'center',
-    paddingVertical: 60,
+  },
+  divider: {
+    width: '80%',
+    height: 2,
+    backgroundColor: colors.primary,
+    marginBottom: 20,
+    opacity: 0.3,
+  },
+  yourScoreLabel: {
+    fontSize: height * 0.035,
+    fontFamily: 'American-Typewriter',
+    color: colors.text,
+    marginBottom: 5,
+  },
+  yourScoreValue: {
+    fontSize: height * 0.05,
+    fontFamily: 'American-Typewriter',
+    color: colors.accent,
+    fontWeight: 'bold',
+  },
+  buttonContainer: {
+    marginTop: 40,
+    paddingHorizontal: 40,
+  },
+  backButton: {
+    width: '100%',
+  },
+  errorText: {
+    textAlign: 'center',
+    color: 'red',
+    fontSize: 16,
+    fontFamily: 'American-Typewriter',
   },
   emptyText: {
+    textAlign: 'center',
+    color: colors.primary,
     fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colors.textSecondary,
+    fontFamily: 'American-Typewriter',
   },
 });
 
-export default ScoreboardScreen; 
+export default ScoreboardScreen;

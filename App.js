@@ -18,7 +18,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import MenuScreen from './src/screens/MenuScreen';
 import GameScreen from './src/screens/GameScreen';
 import ScoreboardScreen from './src/screens/ScoreboardScreen';
-import HelpScreen from './src/screens/HelpScreen';
+// import HelpScreen from './src/screens/HelpScreen';
 import TransitionScreen from './src/screens/TransitionScreen';
 
 const Stack = createStackNavigator();
@@ -91,7 +91,7 @@ export default function App() {
               <Stack.Screen name="Menu" component={MenuScreen} />
               <Stack.Screen name="Game" component={GameScreen} />
               <Stack.Screen name="Scoreboard" component={ScoreboardScreen} />
-              <Stack.Screen name="Help" component={HelpScreen} />
+              {/* <Stack.Screen name="Help" component={HelpScreen} /> */}
               <Stack.Screen name="Transition" component={TransitionScreen} />
             </Stack.Navigator>
           </NavigationContainer>

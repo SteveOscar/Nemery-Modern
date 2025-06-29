@@ -1,137 +1,253 @@
-import React, { useState } from 'react';
+// src/screens/LoginScreen.js
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
-  SafeAreaView,
+  Animated,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  ActivityIndicator,
+  Dimensions,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
-import Button from '../components/Button';
+import { useNavigation } from '@react-navigation/native';
+import { useUser } from '../contexts/UserContext';
+import { useSound } from '../contexts/SoundContext';
 import Logo from '../components/Logo';
+import Button from '../components/Button';
 import { colors } from '../constants/colors';
 
-const LoginScreen = ({ onLogin, onRegister }) => {
+const { width, height } = Dimensions.get('window');
+
+const LoginScreen = () => {
+  const navigation = useNavigation();
+  const { login, isLoading, error, message, clearError, isAuthenticated } = useUser();
+  const { playSound } = useSound();
+  
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
+  
+  // Animation values
+  const fadeAnim1 = useRef(new Animated.Value(0)).current;
+  const fadeAnim2 = useRef(new Animated.Value(0)).current;
+  const fadeAnim3 = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef(null);
+
+  useEffect(() => {
+    // If already authenticated, go to menu
+    if (isAuthenticated) {
+      navigation.replace('Menu');
+      return;
+    }
+
+    // Start animations
+    Animated.sequence([
+      Animated.timing(fadeAnim1, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.parallel([
+        Animated.timing(fadeAnim2, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim3, {
+          toValue: 1,
+          duration: 800,
+          delay: 200,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  }, [isAuthenticated]);
 
   const handleLogin = async () => {
-    if (!username.trim() || !password.trim()) {
+    Keyboard.dismiss();
+    setLocalError('');
+    
+    if (!username.trim()) {
+      setLocalError('Enter a name');
       return;
     }
     
-    setIsLoading(true);
-    try {
-      await onLogin(username, password);
-    } catch (error) {
-      console.error('Login error:', error);
-    } finally {
-      setIsLoading(false);
+    if (username.length > 10) {
+      setLocalError(`Name is ${username.length - 10} characters too long`);
+      return;
+    }
+
+    const success = await login(username.trim());
+    if (success) {
+      await playSound('whoosh');
+      navigation.replace('Menu');
     }
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <View style={styles.content}>
-          <Logo size="large" style={styles.logo} />
-          
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue playing</Text>
+  const handleFocus = () => {
+    clearError();
+    setLocalError('');
+    scrollViewRef.current?.scrollTo({ y: 100, animated: true });
+  };
 
-          <View style={styles.form}>
+  const handleBlur = () => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
+  const displayError = localError || error;
+
+  return (
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView 
+          ref={scrollViewRef}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {isLoading && (
+            <ActivityIndicator 
+              size="large" 
+              color={colors.primary} 
+              style={styles.loader}
+            />
+          )}
+          
+          <Animated.View style={[styles.welcomeContainer, { opacity: fadeAnim1 }]}>
+            <Text style={styles.welcomeText} allowFontScaling={false}>
+              Welcome to
+            </Text>
+            <Logo letters="NEMERY" />
+          </Animated.View>
+          
+          <Animated.View style={[styles.formContainer, { opacity: fadeAnim2 }]}>
+            <Text style={styles.instructionText} allowFontScaling={false}>
+              Create a User Name:
+            </Text>
+          </Animated.View>
+          
+          <Animated.View style={[styles.inputContainer, { opacity: fadeAnim3 }]}>
             <TextInput
               style={styles.input}
-              placeholder="Username"
               value={username}
               onChangeText={setUsername}
-              autoCapitalize="none"
+              placeholder="Enter username"
+              placeholderTextColor={colors.accent + '80'}
               autoCorrect={false}
+              autoCapitalize="none"
+              maxLength={20}
+              selectionColor={colors.accent}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              editable={!isLoading}
             />
             
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
-
             <Button
-              title="Sign In"
+              text="Submit"
               onPress={handleLogin}
-              disabled={isLoading || !username.trim() || !password.trim()}
-              style={styles.loginButton}
+              style={styles.submitButton}
+              disabled={isLoading}
             />
-
-            <Button
-              title="Create Account"
-              onPress={onRegister}
-              variant="secondary"
-              style={styles.registerButton}
-            />
-          </View>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+            
+            {displayError ? (
+              <Text style={styles.errorText} allowFontScaling={false}>
+                {displayError}
+              </Text>
+            ) : null}
+            
+            {message ? (
+              <Text style={styles.messageText} allowFontScaling={false}>
+                {message}
+              </Text>
+            ) : null}
+          </Animated.View>
+          
+          <View style={styles.spacer} />
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.secondary,
   },
-  keyboardView: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
+  scrollContent: {
+    flexGrow: 1,
+    paddingTop: height * 0.1,
     paddingHorizontal: 20,
   },
-  logo: {
-    alignSelf: 'center',
+  loader: {
+    marginBottom: 20,
+  },
+  welcomeContainer: {
+    alignItems: 'center',
     marginBottom: 40,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  welcomeText: {
+    fontSize: height * 0.045,
+    color: colors.primary,
+    fontFamily: 'American-Typewriter',
+    marginBottom: -10,
+  },
+  formContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  instructionText: {
+    fontSize: height * 0.03,
     color: colors.text,
-    marginBottom: 8,
+    fontFamily: 'American-Typewriter',
   },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: colors.textSecondary,
-    marginBottom: 40,
-  },
-  form: {
+  inputContainer: {
     width: '100%',
+    maxWidth: 300,
+    alignSelf: 'center',
   },
   input: {
-    backgroundColor: colors.surface,
+    height: 50,
+    borderWidth: 2,
+    borderColor: colors.accent,
     borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  loginButton: {
-    marginBottom: 12,
-  },
-  registerButton: {
+    paddingHorizontal: 15,
+    fontSize: 18,
+    color: colors.text,
+    backgroundColor: 'white',
+    fontFamily: 'American-Typewriter',
+    textAlign: 'center',
     marginBottom: 20,
+  },
+  submitButton: {
+    marginBottom: 20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: height * 0.025,
+    fontFamily: 'American-Typewriter',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  messageText: {
+    color: colors.primary,
+    fontSize: height * 0.025,
+    fontFamily: 'American-Typewriter',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  spacer: {
+    height: 100,
   },
 });
 
-export default LoginScreen; 
+export default LoginScreen;
