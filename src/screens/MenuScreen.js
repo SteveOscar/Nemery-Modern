@@ -137,7 +137,7 @@ const MenuScreen = () => {
     }
   };
 
-  // Reanimated animated styles
+  // Reanimated animated styless
   const iconAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
