@@ -23,6 +23,7 @@ import { useUser } from '../contexts/UserContext';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
 import { colors } from '../constants/colors';
+import CardFlip from 'react-native-card-flip';
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,8 +37,9 @@ const MenuScreen = () => {
   const fadeAnims = useRef(
     Array(5).fill().map(() => useSharedValue(0))
   ).current;
-  const iconScale = useSharedValue(1);
-  const iconOpacity = useSharedValue(0.7);
+  
+  // Card flip ref for animation control
+  const cardRef = useRef(null);
   
   const [helpText] = useState('???');
 
@@ -59,49 +61,18 @@ const MenuScreen = () => {
       );
     });
 
-    // Start icon animation
-    startIconAnimation();
+    // Start continuous flipping animation
+    startFlippingAnimation();
   }, [isAuthenticated]);
 
-  const startIconAnimation = () => {
-    const animateIcon = () => {
-      const duration = Math.random() * 2000 + 4000;
-      const delay = Math.random() * 2000 + 1000;
-      
-      // Create a flip effect using scale and opacity
-      iconScale.value = withDelay(
-        delay,
-        withSequence(
-          withTiming(0.3, {
-            duration: duration / 2,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          withTiming(1, {
-            duration: duration / 2,
-            easing: Easing.inOut(Easing.ease),
-          })
-        )
-      );
-      
-      iconOpacity.value = withDelay(
-        delay,
-        withSequence(
-          withTiming(0.2, {
-            duration: duration / 2,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          withTiming(0.7, {
-            duration: duration / 2,
-            easing: Easing.inOut(Easing.ease),
-          })
-        )
-      );
-      
-      // Schedule next animation
-      setTimeout(animateIcon, delay + duration + 2000);
-    };
-    
-    animateIcon();
+  const startFlippingAnimation = () => {
+    const flipInterval = setInterval(() => {
+      if (cardRef.current) {
+        cardRef.current.flip();
+      }
+    }, 3000); // Flip every 3 seconds
+
+    return () => clearInterval(flipInterval);
   };
 
   const handleStartGame = async () => {
@@ -137,16 +108,6 @@ const MenuScreen = () => {
     }
   };
 
-  // Reanimated animated styless
-  const iconAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: iconScale.value },
-      ],
-      opacity: iconOpacity.value,
-    };
-  });
-
   const fadeAnimatedStyles = fadeAnims.map((anim, index) => 
     useAnimatedStyle(() => ({
       opacity: anim.value,
@@ -156,13 +117,28 @@ const MenuScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <Animated.View style={[styles.iconWrapper, iconAnimatedStyle]}>
-          <Image
-            source={require('../../assets/images/icon_logo.png')}
-            style={styles.icon}
-            resizeMode="contain"
-          />
-        </Animated.View>
+        <CardFlip
+          ref={cardRef}
+          style={styles.iconWrapper}
+          duration={1500}
+          flipDirection="y"
+          perspective={800}
+        >
+          <View style={styles.iconCard}>
+            <Image
+              source={require('../../assets/images/icon_logo.png')}
+              style={styles.icon}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.iconCard}>
+            <Image
+              source={require('../../assets/images/icon_logo.png')}
+              style={styles.icon}
+              resizeMode="contain"
+            />
+          </View>
+        </CardFlip>
       </View>
 
       <View style={styles.menuContainer}>
@@ -232,6 +208,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   iconWrapper: {
+    width: width * 0.25,
+    height: width * 0.25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconCard: {
     width: width * 0.25,
     height: width * 0.25,
     justifyContent: 'center',
