@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: height * 0.045,
-    color: colors.secondary,
+    color: colors.white,
     fontFamily: 'System',
     fontWeight: '600',
   },

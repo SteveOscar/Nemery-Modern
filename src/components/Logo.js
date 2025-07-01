@@ -16,21 +16,21 @@ const Logo = ({ size = 'medium', showText = true, style }) => {
   const getTextSize = () => {
     switch (size) {
       case 'small':
-        return 16;
+        return 36;
       case 'large':
-        return 32;
+        return 42;
       default:
-        return 24;
+        return 36;
     }
   };
 
   return (
     <View style={[styles.container, style]}>
-      <Image
+      {/* <Image
         source={require('../../assets/images/icon.png')}
         style={[styles.logo, getSize()]}
         resizeMode="contain"
-      />
+      /> */}
       {showText && (
         <Text style={[styles.text, { fontSize: getTextSize() }]}>
           Nemery
@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#007AFF',
     textAlign: 'center',
+    marginBottom: 30,
   },
 });
 

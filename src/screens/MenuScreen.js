@@ -221,7 +221,7 @@ const MenuScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -248,6 +248,7 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     marginBottom: 5,
+    color: colors.white
   },
   welcomeText: {
     position: 'absolute',
