@@ -18,7 +18,7 @@ const Button = ({ text, onPress, sound = true, style, textStyle }) => {
     
     try {
       const { sound: audioSound } = await Audio.Sound.createAsync(
-        require('../assets/sounds/button.mp3'),
+        require('../../assets/sounds/button.mp3'),
         { 
           shouldPlay: true,
           volume: 0.2,

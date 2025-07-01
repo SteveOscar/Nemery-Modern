@@ -25,12 +25,13 @@ class SoundService {
 
   async loadSounds() {
     const soundFiles = {
-      move: require('../../assets/sounds/move.mp3'),
-      merge: require('../../assets/sounds/merge.mp3'),
-      gameOver: require('../../assets/sounds/gameOver.mp3'),
-      victory: require('../../assets/sounds/victory.mp3'),
+      // Use existing sound files and fallbacks for missing ones
+      move: require('../../assets/sounds/whoosh.mp3'), // fallback to whoosh
+      merge: require('../../assets/sounds/tap.mp3'), // fallback to tap
+      gameOver: require('../../assets/sounds/button.mp3'), // fallback to button
+      victory: require('../../assets/sounds/button.mp3'), // fallback to button
       button: require('../../assets/sounds/button.mp3'),
-      background: require('../../assets/sounds/background.mp3'),
+      background: require('../../assets/sounds/whoosh.mp3'), // fallback to whoosh
     };
 
     for (const [key, file] of Object.entries(soundFiles)) {
