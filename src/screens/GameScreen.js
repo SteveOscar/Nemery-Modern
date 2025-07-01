@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { colors } from '../constants/colors';
 import { useSound } from '../contexts/SoundContext';
+import CardFlip from 'react-native-card-flip';
 
 const { width, height } = Dimensions.get('window');
 const CELL_SIZE = Math.floor(width * 0.2);
@@ -102,46 +103,37 @@ const GameScreen = ({
   const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
   const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
 
+  // CardFlip refs for each tile
+  const cardRefs = useRef(Array(size[0] * size[1]).fill().map(() => React.createRef()));
+
   // Show/hide tile helpers
   const initialSingleTileShow = useCallback(
     (id) => {
       if (beenClicked.indexOf(id) !== -1) return;
-      const tilt = boardTilt[id];
-      tilt.setValue(1);
-      Animated.timing(tilt, {
-        toValue: 0,
-        duration: 900,
-        easing: Easing.spring,
-        useNativeDriver: false,
-      }).start(() => {
-        setNumbers((prev) => {
-          const next = [...prev];
-          next[id] = hiddenLetters[id];
-          return next;
-        });
+      if (cardRefs.current[id] && cardRefs.current[id].current) {
+        cardRefs.current[id].current.flip();
+      }
+      setNumbers((prev) => {
+        const next = [...prev];
+        next[id] = hiddenLetters[id];
+        return next;
       });
     },
-    [beenClicked, boardTilt, hiddenLetters]
+    [beenClicked, cardRefs, hiddenLetters]
   );
 
   const tileHide = useCallback(
     (id) => {
-      const tilt = boardTilt[id];
-      tilt.setValue(0);
-      Animated.timing(tilt, {
-        toValue: 1,
-        duration: 500,
-        easing: Easing.spring,
-        useNativeDriver: false,
-      }).start(() => {
-        setNumbers((prev) => {
-          const next = [...prev];
-          next[id] = '';
-          return next;
-        });
+      if (cardRefs.current[id] && cardRefs.current[id].current) {
+        cardRefs.current[id].current.flip();
+      }
+      setNumbers((prev) => {
+        const next = [...prev];
+        next[id] = '';
+        return next;
       });
     },
-    [boardTilt]
+    [cardRefs]
   );
 
   // Show/hide tiles in sequence
@@ -333,31 +325,40 @@ const GameScreen = ({
       for (let col = 0; col < size[0]; col++) {
         let id = row * size[0] + col;
         let letter = numbers[id];
-        let tilt = boardTilt[id].interpolate({
-          inputRange: [0, 1, 2],
-          outputRange: ['0deg', '-180deg', '-360deg'],
-        });
-        let style = {
-          left: col * CELL_SIZE + CELL_PADDING,
-          top: row * CELL_SIZE + CELL_PADDING,
-          transform: [
-            { perspective: CELL_SIZE * 0.95 },
-            { rotateX: tilt },
-          ],
-        };
         result.push(
-          <Animated.View
+          <View
             key={id}
-            style={[styles.tile, style]}
-            onStartShouldSetResponder={() => {
-              clickTile(id);
-              return true;
-            }}
+            style={[
+              styles.tile,
+              {
+                left: col * CELL_SIZE + CELL_PADDING,
+                top: row * CELL_SIZE + CELL_PADDING,
+              },
+            ]}
           >
-            <Text allowFontScaling={false} style={styles.letter}>
-              {letter}
-            </Text>
-          </Animated.View>
+            <CardFlip
+              ref={cardRefs.current[id]}
+              style={styles.cardFlip}
+              duration={800}
+              flipDirection="y"
+              perspective={600}
+            >
+              <View style={styles.tileFace}>
+                {/* Hidden side (back) */}
+              </View>
+              <View
+                style={styles.tileFace}
+                onStartShouldSetResponder={() => {
+                  clickTile(id);
+                  return true;
+                }}
+              >
+                <Text allowFontScaling={false} style={styles.letter}>
+                  {letter}
+                </Text>
+              </View>
+            </CardFlip>
+          </View>
         );
       }
     }
@@ -413,6 +414,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
     borderColor: colors.primary,
     borderWidth: 3,
+  },
+  cardFlip: {
+    width: TILE_SIZE,
+    height: TILE_SIZE,
+  },
+  tileFace: {
+    width: TILE_SIZE,
+    height: TILE_SIZE,
+    borderRadius: BORDER_RADIUS,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.primaryLight,
   },
   letter: {
     color: colors.secondary,
