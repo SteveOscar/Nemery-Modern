@@ -31,16 +31,24 @@ function maxNumber(difficulty, level) {
 function generateNumbers(size, difficulty, level) {
   const length = size[0] * size[1];
   const max = maxNumber(difficulty, level);
-  let random = [];
-  for (let i = 0; i < length; i++) {
-    let temp = Math.floor(Math.random() * max);
-    if (random.indexOf(temp) === -1) {
-      random.push(temp);
-    } else {
-      i--;
-    }
+  
+  // If we need more unique numbers than available, use a larger range
+  const actualMax = Math.max(max, length);
+  
+  // Generate all possible numbers and shuffle them
+  let allNumbers = [];
+  for (let i = 0; i < actualMax; i++) {
+    allNumbers.push(i);
   }
-  return random;
+  
+  // Fisher-Yates shuffle
+  for (let i = allNumbers.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]];
+  }
+  
+  // Take the first 'length' numbers
+  return allNumbers.slice(0, length);
 }
 
 function timeAdjustment(difficulty) {
