@@ -388,15 +388,17 @@ const GameScreen = ({
         style={styles.backgroundTop}
         resizeMode="cover"
       />
-      <Animated.View style={{ opacity: fadeAnim }}>
-        <Animated.View
-          style={[
-            styles.timer,
-            { height: timerHeight, width: progress },
-          ]}
-        >
-          <Animated.Text style={[styles.timerText, { opacity: timerText }]}>TIMER</Animated.Text>
-        </Animated.View>
+      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}>
+        <View style={styles.timerContainer}>
+          <Animated.View
+            style={[
+              styles.timer,
+              { height: timerHeight, width: progress },
+            ]}
+          >
+            <Animated.Text style={[styles.timerText, { opacity: timerText }]}>TIMER</Animated.Text>
+          </Animated.View>
+        </View>
         <View
           style={{
             width: dimensionWidth,
@@ -405,7 +407,6 @@ const GameScreen = ({
           }}
         >
           {renderTiles()}
-          <Text>Hello</Text>
         </View>
       </Animated.View>
     </View>
@@ -413,6 +414,11 @@ const GameScreen = ({
 };
 
 const styles = StyleSheet.create({
+  gameContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   tile: {
     position: 'absolute',
     width: TILE_SIZE,
@@ -444,14 +450,17 @@ const styles = StyleSheet.create({
     textShadowColor: 'black',
     textShadowOffset: { width: 1, height: 1 },
   },
-  timer: {
-    flex: 1,
-    position: 'absolute',
+  timerContainer: {
+    width: '100%',
+    height: height * 0.1,
+    marginBottom: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    left: 0,
-    right: 0,
-    top: -(height * 0.2),
+  },
+  timer: {
+    height: height * 0.05,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.secondaryLight,
     borderRadius: 5,
     opacity: 0.9,
