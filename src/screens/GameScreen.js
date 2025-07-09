@@ -148,43 +148,24 @@ const GameScreen = ({
   // Show/hide tiles in sequence
   const showTiles = useCallback(
     (shouldHide) => {
+      const totalTiles = size[0] * size[1];
+      
+      // Show all tiles at once
       setTimeout(() => {
-        for (let i = 0; i < size[0]; i++) {
-          for (let j = 0; j < size[1]; j++) {
-            initialSingleTileShow(i * size[1] + j);
-          }
+        for (let i = 0; i < totalTiles; i++) {
+          initialSingleTileShow(i);
         }
       }, 500);
-      setTimeout(() => {
-        for (let i = size[0]; i < size[0] * 2; i++) {
-          for (let j = 0; j < size[1]; j++) {
-            initialSingleTileShow(i * size[1] + j);
-          }
-        }
-      }, 1200);
-      setTimeout(() => {
-        if (size[1] < 3) return;
-        for (let i = size[0] * 2; i < size[0] * 3; i++) {
-          for (let j = 0; j < size[1]; j++) {
-            initialSingleTileShow(i * size[1] + j);
-          }
-        }
-      }, 1700);
-      setTimeout(() => {
-        if (size[1] < 4) return;
-        for (let i = size[0] * 3; i < size[0] * 4; i++) {
-          for (let j = 0; j < size[1]; j++) {
-            initialSingleTileShow(i * size[1] + j);
-          }
-        }
-      }, 2200);
+      
       if (shouldHide) hideTiles();
     },
-    [size, initialSingleTileShow]
+    [size, initialSingleTileShow, hideTiles]
   );
 
   const hideTiles = useCallback(() => {
     const difficultyFactor = timeAdjustment(difficulty) * 1.3;
+    const totalTiles = size[0] * size[1];
+    
     setTimeout(() => {
       Animated.timing(timerText, {
         toValue: 1,
@@ -197,37 +178,17 @@ const GameScreen = ({
         useNativeDriver: false,
       }).start();
     }, 2500 * difficultyFactor);
+    
+    // Hide all tiles at once after the delay
     setTimeout(() => {
-      for (let i = 0; i < size[0]; i++) {
-        for (let j = 0; j < size[1]; j++) {
-          tileHide(i * size[1] + j);
-        }
+      for (let i = 0; i < totalTiles; i++) {
+        tileHide(i);
       }
     }, 2500 * difficultyFactor);
+    
+    // Start the game after tiles are hidden
     setTimeout(() => {
-      for (let i = size[0]; i < size[0] * 2; i++) {
-        for (let j = 0; j < size[1]; j++) {
-          tileHide(i * size[1] + j);
-        }
-      }
-    }, 2700 * difficultyFactor);
-    setTimeout(() => {
-      if (size[1] < 3) return;
-      for (let i = size[0] * 2; i < size[0] * 3; i++) {
-        for (let j = 0; j < size[1]; j++) {
-          tileHide(i * size[1] + j);
-        }
-      }
-    }, 2900 * difficultyFactor);
-    setTimeout(() => {
-      if (size[1] < 4) return;
-      for (let i = size[0] * 3; i < size[0] * 4; i++) {
-        for (let j = 0; j < size[1]; j++) {
-          tileHide(i * size[1] + j);
-        }
-      }
-    }, 3000 * difficultyFactor);
-    setTimeout(() => {
+      console.log('Setting inPlay to true and starting timer');
       setInPlay(true);
       startTimer();
     }, 3500 * gameStartDelay(difficulty, difficultyFactor));
@@ -276,9 +237,23 @@ const GameScreen = ({
 
   const clickTile = useCallback(
     (id) => {
-      if (!inPlay) return;
-      if (alreadyClicked(id)) return;
+      console.log('clickTile called with id:', id, 'inPlay:', inPlay);
+      if (!inPlay) {
+        console.log('Game not in play, returning');
+        return;
+      }
+      if (alreadyClicked(id)) {
+        console.log('Tile already clicked, returning');
+        return;
+      }
+      console.log('Processing tile click');
       playButtonSound();
+      
+      // Flip the card to show the number
+      if (cardRefs.current[id] && cardRefs.current[id].current) {
+        cardRefs.current[id].current.flip();
+      }
+      
       setTimeout(() => {
         setNumbers((prev) => {
           const next = [...prev];
@@ -296,7 +271,7 @@ const GameScreen = ({
         useNativeDriver: false,
       }).start();
     },
-    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, boardTilt]
+    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, boardTilt, cardRefs]
   );
 
   const checkSelection = useCallback(
@@ -352,7 +327,13 @@ const GameScreen = ({
               flipDirection="y"
               perspective={600}
             >
-              <View style={styles.tileFace}>
+              <View 
+                style={styles.tileFace}
+                onStartShouldSetResponder={() => {
+                  clickTile(id);
+                  return true;
+                }}
+              >
                 {/* Hidden side (back) */}
               </View>
               <View
