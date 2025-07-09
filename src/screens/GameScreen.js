@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { colors } from '../constants/colors';
 import { useSound } from '../contexts/SoundContext';
+import { useGame } from '../contexts/GameContext';
 import CardFlip from 'react-native-card-flip';
 
 const { width, height } = Dimensions.get('window');
@@ -76,14 +77,14 @@ function levelTimeAdjustment(baseTime, level) {
 }
 
 const GameScreen = ({
-  size = [4, 4],
-  difficulty = 'Easy',
-  level = 1,
   sound = true,
   updateScore = () => {},
   deliverVerdict = () => {},
   endGame = () => {},
 }) => {
+  const { difficulty, level, getCurrentConfig } = useGame();
+  const config = getCurrentConfig();
+  const size = config.gridSize;
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const progress = useRef(new Animated.Value(width)).current;
