@@ -78,16 +78,44 @@ function levelTimeAdjustment(baseTime, level) {
   return result / 100;
 }
 
+// Overlay component for success/failure messages
+const Overlay = ({ visible, message, type, anim }) => {
+  if (!visible) return null;
+  return (
+    <Animated.View
+      style={[
+        styles.overlay,
+        type === 'success' ? styles.overlaySuccess : styles.overlayFail,
+        {
+          opacity: anim,
+          transform: [
+            {
+              scale: anim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.7, 1.1],
+              }),
+            },
+          ],
+        },
+      ]}
+    >
+      <Text style={styles.overlayText}>{message}</Text>
+    </Animated.View>
+  );
+};
+
 const GameScreen = ({
   sound = true,
   updateScore = () => {},
   deliverVerdict = () => {},
   endGame = () => {},
 }) => {
+  // --- State ---
   const { difficulty, level, getCurrentConfig, score, nextLevel } = useGame();
   const navigation = useNavigation();
   const config = getCurrentConfig();
   const size = config.gridSize;
+
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const progress = useRef(new Animated.Value(width)).current;
@@ -106,15 +134,96 @@ const GameScreen = ({
   const [beenClicked, setBeenClicked] = useState([]);
   const [inPlay, setInPlay] = useState(false);
 
-  // Overlay state for success/failure messages
+  // --- Overlay State ---
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayMessage, setOverlayMessage] = useState('');
   const [overlayType, setOverlayType] = useState('success'); // 'success' or 'fail'
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
-  // Show overlay with animation
+  // --- Sound ---
+  const { playSound } = useSound();
+  const playMoveSound = useCallback(() => playSound('whoosh'), [playSound]);
+  const playButtonSound = useCallback(() => playSound('tap'), [playSound]);
+  const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
+  const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
+
+  // --- Tile helpers ---
+  const cardRefs = useRef(Array(size[0] * size[1]).fill().map(() => React.createRef()));
+
+  // Show a single tile
+  const initialSingleTileShow = useCallback(
+    (id) => {
+      if (beenClicked.indexOf(id) !== -1) return;
+      if (cardRefs.current[id] && cardRefs.current[id].current) {
+        cardRefs.current[id].current.flip();
+      }
+      setNumbers((prev) => {
+        const next = [...prev];
+        next[id] = hiddenLetters[id];
+        return next;
+      });
+    },
+    [beenClicked, cardRefs, hiddenLetters]
+  );
+
+  // Hide a single tile
+  const tileHide = useCallback(
+    (id) => {
+      if (cardRefs.current[id] && cardRefs.current[id].current) {
+        cardRefs.current[id].current.flip();
+      }
+      setNumbers((prev) => {
+        const next = [...prev];
+        next[id] = '';
+        return next;
+      });
+    },
+    [cardRefs]
+  );
+
+  // Show all tiles, then optionally hide them
+  const showTiles = useCallback(
+    (shouldHide) => {
+      const totalTiles = size[0] * size[1];
+      setTimeout(() => {
+        for (let i = 0; i < totalTiles; i++) {
+          initialSingleTileShow(i);
+        }
+      }, 500);
+      if (shouldHide) hideTiles();
+    },
+    [size, initialSingleTileShow, hideTiles]
+  );
+
+  // Hide all tiles after a delay, then start the game
+  const hideTiles = useCallback(() => {
+    const difficultyFactor = timeAdjustment(difficulty) * 1.3;
+    const totalTiles = size[0] * size[1];
+    setTimeout(() => {
+      Animated.timing(timerText, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: false,
+      }).start();
+      Animated.timing(timerHeight, {
+        toValue: height * 0.05,
+        duration: 1800,
+        useNativeDriver: false,
+      }).start();
+    }, 2500 * difficultyFactor);
+    setTimeout(() => {
+      for (let i = 0; i < totalTiles; i++) {
+        tileHide(i);
+      }
+    }, 2500 * difficultyFactor);
+    setTimeout(() => {
+      setInPlay(true);
+      startTimer();
+    }, 3500 * gameStartDelay(difficulty, difficultyFactor));
+  }, [difficulty, size, tileHide, timerHeight, timerText, startTimer]);
+
+  // --- Overlay logic ---
   const showOverlay = (message, type = 'success', callback) => {
-    console.log('showOverlay called with', message, type);
     setOverlayMessage(message);
     setOverlayType(type);
     setOverlayVisible(true);
@@ -138,98 +247,27 @@ const GameScreen = ({
     });
   };
 
-  // // Sound
-  const { playSound } = useSound();
-  
-  // // Convenience sound functions
-  const playMoveSound = useCallback(() => playSound('whoosh'), [playSound]);
-  const playButtonSound = useCallback(() => playSound('tap'), [playSound]);
-  const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
-  const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
+  // --- Effects ---
+  // Fade in and show tiles on mount
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1300,
+      useNativeDriver: false,
+    }).start();
+    showTiles(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // // CardFlip refs for each tile
-  const cardRefs = useRef(Array(size[0] * size[1]).fill().map(() => React.createRef()));
+  // Show tiles for new level when level changes (not on initial mount)
+  useEffect(() => {
+    if (level > 1) {
+      showTiles(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level]);
 
-  // // Show/hide tile helpers
-  const initialSingleTileShow = useCallback(
-    (id) => {
-      if (beenClicked.indexOf(id) !== -1) return;
-      if (cardRefs.current[id] && cardRefs.current[id].current) {
-        cardRefs.current[id].current.flip();
-      }
-      setNumbers((prev) => {
-        const next = [...prev];
-        next[id] = hiddenLetters[id];
-        return next;
-      });
-    },
-    [beenClicked, cardRefs, hiddenLetters]
-  );
-
-  const tileHide = useCallback(
-    (id) => {
-      if (cardRefs.current[id] && cardRefs.current[id].current) {
-        cardRefs.current[id].current.flip();
-      }
-      setNumbers((prev) => {
-        const next = [...prev];
-        next[id] = '';
-        return next;
-      });
-    },
-    [cardRefs]
-  );
-
-  // Show/hide tiles in sequence
-  const showTiles = useCallback(
-    (shouldHide) => {
-      const totalTiles = size[0] * size[1];
-      
-      // Show all tiles at once
-      setTimeout(() => {
-        for (let i = 0; i < totalTiles; i++) {
-          initialSingleTileShow(i);
-        }
-      }, 500);
-      
-      if (shouldHide) hideTiles();
-    },
-    [size, initialSingleTileShow, hideTiles]
-  );
-
-  const hideTiles = useCallback(() => {
-    const difficultyFactor = timeAdjustment(difficulty) * 1.3;
-    const totalTiles = size[0] * size[1];
-    
-    setTimeout(() => {
-      Animated.timing(timerText, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: false,
-      }).start();
-      Animated.timing(timerHeight, {
-        toValue: height * 0.05,
-        duration: 1800,
-        useNativeDriver: false,
-      }).start();
-    }, 2500 * difficultyFactor);
-    
-    // Hide all tiles at once after the delay
-    setTimeout(() => {
-      for (let i = 0; i < totalTiles; i++) {
-        tileHide(i);
-      }
-    }, 2500 * difficultyFactor);
-    
-    // Start the game after tiles are hidden
-    setTimeout(() => {
-      console.log('Setting inPlay to true and starting timer');
-      setInPlay(true);
-      startTimer();
-    }, 3500 * gameStartDelay(difficulty, difficultyFactor));
-  }, [difficulty, size, tileHide, timerHeight, timerText]);
-
-  // Timer logic
+  // Animate the timer and call handleTimerEnd after timer duration
   const startTimer = useCallback(() => {
     Animated.timing(timerText, {
       toValue: 0,
@@ -247,20 +285,9 @@ const GameScreen = ({
     setTimeout(() => {
       handleTimerEnd();
     }, timerDuration);
-  }, [difficulty, level, progress, timerText]);
+  }, [difficulty, level, progress, timerText, handleTimerEnd]);
 
-  // On mount: fade in and show tiles
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1300,
-      useNativeDriver: false,
-    }).start();
-    showTiles(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Tile click logic
+  // --- Tile click logic ---
   const alreadyClicked = useCallback(
     (id) => {
       if (beenClicked.indexOf(id) !== -1) return true;
@@ -270,51 +297,32 @@ const GameScreen = ({
     [beenClicked]
   );
 
+  // Handle tile click
   const clickTile = useCallback(
     (id) => {
-      console.log('clickTile called with id:', id, 'inPlay:', inPlay);
-      if (!inPlay) {
-        console.log('Game not in play, returning');
-        return;
-      }
-      if (alreadyClicked(id)) {
-        console.log('Tile already clicked, returning');
-        return;
-      }
-      console.log('Processing tile click');
+      if (!inPlay) return;
+      if (alreadyClicked(id)) return;
       playButtonSound();
-      
-      // Flip the card to show the number
       if (cardRefs.current[id] && cardRefs.current[id].current) {
         cardRefs.current[id].current.flip();
       }
-      
       setNumbers((prev) => {
         const next = [...prev];
         next[id] = hiddenLetters[id];
-        // Inline checkSelection logic
         const selected = next[id];
-        console.log('selected:', selected, 'prevSelection:', prevSelection, 'numbers:', next, 'id:', id);
         if (selected >= prevSelection) {
           setPrevSelection(selected);
           updateScore(next.filter((n) => n !== '').length);
-          // Check for level completion
           if (next.every((n) => n !== '')) {
-            console.log('LEVEL COMPLETE! numbers:', next);
             setInPlay(false);
             playVictorySound();
             showOverlay('Level Complete!', 'success', () => {
               nextLevel();
-              // Reset board for next level
               setPrevSelection('');
               setBeenClicked([]);
               setNumbers(Array(size[0] * size[1]).fill(''));
               setHiddenLetters(generateNumbers(size, difficulty, level + 1));
               setInPlay(false);
-              // Show tiles for new level
-              setTimeout(() => {
-                showTiles(true);
-              }, 400);
             });
           }
         } else {
@@ -341,7 +349,7 @@ const GameScreen = ({
     [inPlay, alreadyClicked, playButtonSound, hiddenLetters, boardTilt, cardRefs, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame, playVictorySound, nextLevel, navigation, size, difficulty, level]
   );
 
-  // Timer end
+  // Timer end logic
   const handleTimerEnd = useCallback(() => {
     const length = size[0] * size[1];
     if (!inPlay || beenClicked.length === length) return;
@@ -355,66 +363,66 @@ const GameScreen = ({
     });
   }, [inPlay, beenClicked, size, playGameOverSound, deliverVerdict, showTiles, endGame, navigation]);
 
-  // Add quit handler
+  // Handle quit button
   const handleQuit = () => {
     endGame();
     navigation.navigate('Menu');
   };
 
-  // Render tiles
+  // --- Render helpers ---
+  // Render a single tile
+  const renderTile = (id, letter) => (
+    <View
+      key={id}
+      style={[
+        styles.tile,
+        {
+          left: (id % size[0]) * CELL_SIZE + CELL_PADDING,
+          top: Math.floor(id / size[0]) * CELL_SIZE + CELL_PADDING,
+        },
+      ]}
+    >
+      <CardFlip
+        ref={cardRefs.current[id]}
+        style={styles.cardFlip}
+        duration={800}
+        flipDirection="y"
+        perspective={600}
+      >
+        <View
+          style={styles.tileFace}
+          onStartShouldSetResponder={() => {
+            clickTile(id);
+            return true;
+          }}
+        >
+          {/* Hidden side (back) */}
+        </View>
+        <View
+          style={styles.tileFace}
+          onStartShouldSetResponder={() => {
+            clickTile(id);
+            return true;
+          }}
+        >
+          <Text allowFontScaling={false} style={styles.letter}>
+            {letter}
+          </Text>
+        </View>
+      </CardFlip>
+    </View>
+  );
+
+  // Render all tiles
   const renderTiles = () => {
-    let result = [];
-    for (let row = 0; row < size[1]; row++) {
-      for (let col = 0; col < size[0]; col++) {
-        let id = row * size[0] + col;
-        let letter = numbers[id];
-        result.push(
-          <View
-            key={id}
-            style={[
-              styles.tile,
-              {
-                left: col * CELL_SIZE + CELL_PADDING,
-                top: row * CELL_SIZE + CELL_PADDING,
-              },
-            ]}
-          >
-            <CardFlip
-              ref={cardRefs.current[id]}
-              style={styles.cardFlip}
-              duration={800}
-              flipDirection="y"
-              perspective={600}
-            >
-              <View 
-                style={styles.tileFace}
-                onStartShouldSetResponder={() => {
-                  clickTile(id);
-                  return true;
-                }}
-              >
-                {/* Hidden side (back) */}
-              </View>
-              <View
-                style={styles.tileFace}
-                onStartShouldSetResponder={() => {
-                  clickTile(id);
-                  return true;
-                }}
-              >
-                <Text allowFontScaling={false} style={styles.letter}>
-                  {letter}
-                </Text>
-              </View>
-            </CardFlip>
-          </View>
-        );
-      }
+    const result = [];
+    for (let id = 0; id < size[0] * size[1]; id++) {
+      result.push(renderTile(id, numbers[id]));
     }
     return result;
   };
 
-  // // Main render
+  // --- Main render ---
   const dimensionWidth = CELL_SIZE * size[0];
   const dimensionHeight = CELL_SIZE * size[1];
   return (
@@ -435,28 +443,12 @@ const GameScreen = ({
       </TouchableOpacity>
       <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}> 
         {/* Overlay for success/failure */}
-        {overlayVisible && (
-          <Animated.View
-            style={[
-              styles.overlay,
-              overlayType === 'success' ? styles.overlaySuccess : styles.overlayFail,
-              {
-                opacity: overlayAnim,
-                transform: [
-                  {
-                    scale: overlayAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.7, 1.1],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
-            {console.log('RENDERING OVERLAY', overlayMessage, overlayType, overlayVisible)}
-            <Text style={styles.overlayText}>{overlayMessage}</Text>
-          </Animated.View>
-        )}
+        <Overlay
+          visible={overlayVisible}
+          message={overlayMessage}
+          type={overlayType}
+          anim={overlayAnim}
+        />
         {/* Score and Level above timer */}
         <View style={styles.infoBar}>
           <Text style={styles.infoText}>Score: {score}</Text>
