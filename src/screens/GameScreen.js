@@ -254,14 +254,24 @@ const GameScreen = ({
         cardRefs.current[id].current.flip();
       }
       
-      setTimeout(() => {
-        setNumbers((prev) => {
-          const next = [...prev];
-          next[id] = hiddenLetters[id];
-          return next;
-        });
-        checkSelection(id);
-      }, 200);
+      setNumbers((prev) => {
+        const next = [...prev];
+        next[id] = hiddenLetters[id];
+        // Inline checkSelection logic
+        const selected = next[id];
+        console.log('selected:', selected, 'prevSelection:', prevSelection, 'numbers:', next, 'id:', id);
+        if (selected >= prevSelection) {
+          setPrevSelection(selected);
+          updateScore(next.filter((n) => n !== '').length);
+        } else {
+          playGameOverSound();
+          deliverVerdict(false);
+          setInPlay(false);
+          showTiles(false);
+          endGame();
+        }
+        return next;
+      });
       const tilt = boardTilt[id];
       tilt.setValue(1);
       Animated.timing(tilt, {
@@ -271,24 +281,7 @@ const GameScreen = ({
         useNativeDriver: false,
       }).start();
     },
-    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, boardTilt, cardRefs]
-  );
-
-  const checkSelection = useCallback(
-    (id) => {
-      const selected = numbers[id];
-      if (selected >= prevSelection) {
-        setPrevSelection(selected);
-        updateScore(numbers.filter((n) => n !== '').length);
-      } else {
-        playGameOverSound();
-        deliverVerdict(false);
-        setInPlay(false);
-        showTiles(false);
-        endGame();
-      }
-    },
-    [numbers, prevSelection, updateScore, deliverVerdict, endGame, playGameOverSound, showTiles]
+    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, boardTilt, cardRefs, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame]
   );
 
   // Timer end
