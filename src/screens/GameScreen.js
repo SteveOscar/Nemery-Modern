@@ -84,7 +84,7 @@ const GameScreen = ({
   deliverVerdict = () => {},
   endGame = () => {},
 }) => {
-  const { difficulty, level, getCurrentConfig, score } = useGame();
+  const { difficulty, level, getCurrentConfig, score, nextLevel } = useGame();
   const navigation = useNavigation();
   const config = getCurrentConfig();
   const size = config.gridSize;
@@ -105,6 +105,38 @@ const GameScreen = ({
   const [hiddenLetters, setHiddenLetters] = useState(() => generateNumbers(size, difficulty, level));
   const [beenClicked, setBeenClicked] = useState([]);
   const [inPlay, setInPlay] = useState(false);
+
+  // Overlay state for success/failure messages
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [overlayMessage, setOverlayMessage] = useState('');
+  const [overlayType, setOverlayType] = useState('success'); // 'success' or 'fail'
+  const overlayAnim = useRef(new Animated.Value(0)).current;
+
+  // Show overlay with animation
+  const showOverlay = (message, type = 'success', callback) => {
+    console.log('showOverlay called with', message, type);
+    setOverlayMessage(message);
+    setOverlayType(type);
+    setOverlayVisible(true);
+    overlayAnim.setValue(0);
+    Animated.spring(overlayAnim, {
+      toValue: 1,
+      friction: 5,
+      tension: 80,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(overlayAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }).start(() => {
+          setOverlayVisible(false);
+          if (callback) callback();
+        });
+      }, 1200);
+    });
+  };
 
   // // Sound
   const { playSound } = useSound();
@@ -266,12 +298,34 @@ const GameScreen = ({
         if (selected >= prevSelection) {
           setPrevSelection(selected);
           updateScore(next.filter((n) => n !== '').length);
+          // Check for level completion
+          if (next.every((n) => n !== '')) {
+            console.log('LEVEL COMPLETE! numbers:', next);
+            setInPlay(false);
+            playVictorySound();
+            showOverlay('Level Complete!', 'success', () => {
+              nextLevel();
+              // Reset board for next level
+              setPrevSelection('');
+              setBeenClicked([]);
+              setNumbers(Array(size[0] * size[1]).fill(''));
+              setHiddenLetters(generateNumbers(size, difficulty, level + 1));
+              setInPlay(false);
+              // Show tiles for new level
+              setTimeout(() => {
+                showTiles(true);
+              }, 400);
+            });
+          }
         } else {
           playGameOverSound();
           deliverVerdict(false);
           setInPlay(false);
-          showTiles(false);
-          endGame();
+          showOverlay('Game Over', 'fail', () => {
+            showTiles(false);
+            endGame();
+            navigation.navigate('Menu');
+          });
         }
         return next;
       });
@@ -284,7 +338,7 @@ const GameScreen = ({
         useNativeDriver: false,
       }).start();
     },
-    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, boardTilt, cardRefs, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame]
+    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, boardTilt, cardRefs, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame, playVictorySound, nextLevel, navigation, size, difficulty, level]
   );
 
   // Timer end
@@ -294,9 +348,12 @@ const GameScreen = ({
     playGameOverSound();
     deliverVerdict(false);
     setInPlay(false);
-    showTiles(false);
-    endGame();
-  }, [inPlay, beenClicked, size, playGameOverSound, deliverVerdict, showTiles, endGame]);
+    showOverlay('Game Over', 'fail', () => {
+      showTiles(false);
+      endGame();
+      navigation.navigate('Menu');
+    });
+  }, [inPlay, beenClicked, size, playGameOverSound, deliverVerdict, showTiles, endGame, navigation]);
 
   // Add quit handler
   const handleQuit = () => {
@@ -377,6 +434,29 @@ const GameScreen = ({
         <Text style={styles.quitButtonText}>Quit</Text>
       </TouchableOpacity>
       <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}> 
+        {/* Overlay for success/failure */}
+        {overlayVisible && (
+          <Animated.View
+            style={[
+              styles.overlay,
+              overlayType === 'success' ? styles.overlaySuccess : styles.overlayFail,
+              {
+                opacity: overlayAnim,
+                transform: [
+                  {
+                    scale: overlayAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.7, 1.1],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            {console.log('RENDERING OVERLAY', overlayMessage, overlayType, overlayVisible)}
+            <Text style={styles.overlayText}>{overlayMessage}</Text>
+          </Animated.View>
+        )}
         {/* Score and Level above timer */}
         <View style={styles.infoBar}>
           <Text style={styles.infoText}>Score: {score}</Text>
@@ -518,6 +598,38 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+  overlay: {
+    position: 'absolute',
+    top: '40%',
+    left: '10%',
+    right: '10%',
+    zIndex: 20,
+    padding: 32,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  overlaySuccess: {
+    backgroundColor: 'rgba(50, 205, 50, 0.95)',
+  },
+  overlayFail: {
+    backgroundColor: 'rgba(220, 20, 60, 0.95)',
+  },
+  overlayText: {
+    color: '#fff',
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    letterSpacing: 2,
+    textShadowColor: '#222',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
 });
 
