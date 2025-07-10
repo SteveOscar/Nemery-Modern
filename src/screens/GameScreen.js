@@ -8,11 +8,13 @@ import {
   Easing,
   Image,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { colors } from '../constants/colors';
 import { useSound } from '../contexts/SoundContext';
 import { useGame } from '../contexts/GameContext';
 import CardFlip from 'react-native-card-flip';
+import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 const CELL_SIZE = Math.floor(width * 0.2);
@@ -82,7 +84,8 @@ const GameScreen = ({
   deliverVerdict = () => {},
   endGame = () => {},
 }) => {
-  const { difficulty, level, getCurrentConfig } = useGame();
+  const { difficulty, level, getCurrentConfig, score } = useGame();
+  const navigation = useNavigation();
   const config = getCurrentConfig();
   const size = config.gridSize;
   // Animation refs
@@ -295,6 +298,12 @@ const GameScreen = ({
     endGame();
   }, [inPlay, beenClicked, size, playGameOverSound, deliverVerdict, showTiles, endGame]);
 
+  // Add quit handler
+  const handleQuit = () => {
+    endGame();
+    navigation.navigate('Menu');
+  };
+
   // Render tiles
   const renderTiles = () => {
     let result = [];
@@ -363,7 +372,16 @@ const GameScreen = ({
         style={styles.backgroundTop}
         resizeMode="cover"
       />
-      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}>
+      {/* Quit button in top right */}
+      <TouchableOpacity style={styles.quitButton} onPress={handleQuit}>
+        <Text style={styles.quitButtonText}>Quit</Text>
+      </TouchableOpacity>
+      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}> 
+        {/* Score and Level above timer */}
+        <View style={styles.infoBar}>
+          <Text style={styles.infoText}>Score: {score}</Text>
+          <Text style={styles.infoText}>Level: {level}</Text>
+        </View>
         <View style={styles.timerContainer}>
           <Animated.View
             style={[
@@ -461,6 +479,45 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: height * -0.3,
+  },
+  infoBar: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginTop: 32,
+    marginBottom: 8,
+  },
+  infoText: {
+    color: colors.secondary,
+    fontSize: 22,
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
+    fontFamily: 'System',
+    textShadowColor: colors.primary,
+    textShadowOffset: { width: 1, height: 1 },
+  },
+  quitButton: {
+    position: 'absolute',
+    top: 40,
+    right: 24,
+    zIndex: 10,
+    backgroundColor: colors.secondaryLight,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  quitButtonText: {
+    color: colors.primary,
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
 });
 
