@@ -123,6 +123,11 @@ const GameScreen = ({
   const timerText = useRef(new Animated.Value(0)).current;
 
   // Board state
+  const [tileScales, setTileScales] = useState(() =>
+    Array(size[0] * size[1])
+      .fill()
+      .map(() => new Animated.Value(1))
+  );
   const [prevSelection, setPrevSelection] = useState('');
   const [numbers, setNumbers] = useState(Array(size[0] * size[1]).fill(''));
   const [hiddenLetters, setHiddenLetters] = useState(() => generateNumbers(size, difficulty, level));
@@ -137,7 +142,6 @@ const GameScreen = ({
 
   // --- Sound ---
   const { playSound } = useSound();
-  const playMoveSound = useCallback(() => playSound('whoosh'), [playSound]);
   const playButtonSound = useCallback(() => playSound('tap'), [playSound]);
   const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
   const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
@@ -176,24 +180,38 @@ const GameScreen = ({
     [cardRefs]
   );
 
+  // Stagger show tiles
+  const staggerShow = useCallback(() => {
+    const totalTiles = size[0] * size[1];
+    for (let i = 0; i < totalTiles; i++) {
+      setTimeout(() => initialSingleTileShow(i), i * 50);
+    }
+  }, [initialSingleTileShow, size]);
+
+  // Stagger hide tiles
+  const staggerHide = useCallback(() => {
+    const totalTiles = size[0] * size[1];
+    for (let i = 0; i < totalTiles; i++) {
+      setTimeout(() => tileHide(i), i * 50);
+    }
+  }, [tileHide, size]);
+
   // Show all tiles, then optionally hide them
   const showTiles = useCallback(
     (shouldHide) => {
-      const totalTiles = size[0] * size[1];
-      setTimeout(() => {
-        for (let i = 0; i < totalTiles; i++) {
-          initialSingleTileShow(i);
-        }
-      }, 500);
-      if (shouldHide) hideTiles();
+      setTimeout(staggerShow, 500);
+      if (shouldHide) {
+        const difficultyFactor = timeAdjustment(difficulty) * 1.3;
+        setTimeout(staggerHide, 2500 * difficultyFactor);
+        hideTiles();
+      }
     },
-    [size, initialSingleTileShow, hideTiles]
+    [staggerShow, staggerHide, difficulty, hideTiles]
   );
 
   // Hide all tiles after a delay, then start the game
   const hideTiles = useCallback(() => {
     const difficultyFactor = timeAdjustment(difficulty) * 1.3;
-    const totalTiles = size[0] * size[1];
     setTimeout(() => {
       Animated.timing(timerText, {
         toValue: 1,
@@ -207,15 +225,10 @@ const GameScreen = ({
       }).start();
     }, 2500 * difficultyFactor);
     setTimeout(() => {
-      for (let i = 0; i < totalTiles; i++) {
-        tileHide(i);
-      }
-    }, 2500 * difficultyFactor);
-    setTimeout(() => {
       setInPlay(true);
       startTimer();
     }, 3500 * gameStartDelay(difficulty, difficultyFactor));
-  }, [difficulty, size, tileHide, timerHeight, timerText, startTimer]);
+  }, [difficulty, timerHeight, timerText, startTimer]);
 
   // --- Overlay logic ---
   const showOverlay = (message, type = 'success', callback) => {
@@ -301,6 +314,19 @@ const GameScreen = ({
       if (cardRefs.current[id] && cardRefs.current[id].current) {
         cardRefs.current[id].current.flip();
       }
+      const scale = tileScales[id];
+      Animated.sequence([
+        Animated.timing(scale, {
+          toValue: 1.1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
       setNumbers((prev) => {
         const next = [...prev];
         next[id] = hiddenLetters[id];
@@ -333,7 +359,7 @@ const GameScreen = ({
         return next;
       });
     },
-    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, cardRefs, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame, playVictorySound, nextLevel, navigation, size, difficulty, level]
+    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, cardRefs, tileScales, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame, playVictorySound, nextLevel, navigation, size, difficulty, level]
   );
 
   // Timer end logic
@@ -359,20 +385,21 @@ const GameScreen = ({
   // --- Render helpers ---
   // Render a single tile
   const renderTile = (id, letter) => (
-    <View
+    <Animated.View
       key={id}
       style={[
         styles.tile,
         {
           left: (id % size[0]) * CELL_SIZE + CELL_PADDING,
           top: Math.floor(id / size[0]) * CELL_SIZE + CELL_PADDING,
+          transform: [{ scale: tileScales[id] }],
         },
       ]}
     >
       <CardFlip
         ref={cardRefs.current[id]}
         style={styles.cardFlip}
-        duration={400}
+        duration={600}
         flipDirection="y"
         perspective={1000}
       >
@@ -384,6 +411,7 @@ const GameScreen = ({
           }}
         >
           {/* Hidden side (back) */}
+          <Text allowFontScaling={false} style={styles.backText}>?</Text>
         </View>
         <View
           style={styles.tileFace}
@@ -397,7 +425,7 @@ const GameScreen = ({
           </Text>
         </View>
       </CardFlip>
-    </View>
+    </Animated.View>
   );
 
   // Render all tiles
@@ -492,6 +520,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
     borderColor: colors.primary,
     borderWidth: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   letter: {
     color: colors.secondary,
@@ -500,6 +533,16 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
     textShadowColor: 'black',
     textShadowOffset: { width: 1, height: 1 },
+    fontWeight: 'bold',
+  },
+  backText: {
+    color: colors.primary,
+    fontSize: LETTER_SIZE,
+    backgroundColor: 'transparent',
+    fontFamily: 'System',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 1, height: 1 },
+    fontWeight: 'bold',
   },
   timerContainer: {
     width: '100%',
