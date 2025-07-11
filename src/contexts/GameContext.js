@@ -21,9 +21,7 @@ export const GameProvider = ({ children }) => {
     userScore: 0,
   });
   const [isPlaying, setIsPlaying] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Difficulty configuration
   const difficultyConfig = {
     Easy: { 
       gridSize: [3, 2], 
@@ -55,7 +53,6 @@ export const GameProvider = ({ children }) => {
     },
   };
 
-  // Load saved data on mount
   React.useEffect(() => {
     loadGameData();
   }, []);
@@ -63,14 +60,8 @@ export const GameProvider = ({ children }) => {
   const loadGameData = async () => {
     try {
       const savedHighScores = await SecureStore.getItemAsync('highScores');
-      const savedSound = await SecureStore.getItemAsync('soundEnabled');
-      
       if (savedHighScores) {
         setHighScores(JSON.parse(savedHighScores));
-      }
-      
-      if (savedSound !== null) {
-        setSoundEnabled(savedSound === 'true');
       }
     } catch (error) {
       console.error('Error loading game data:', error);
@@ -85,16 +76,6 @@ export const GameProvider = ({ children }) => {
       console.error('Error saving high scores:', error);
     }
   }, []);
-
-  const toggleSound = useCallback(async () => {
-    const newValue = !soundEnabled;
-    setSoundEnabled(newValue);
-    try {
-      await SecureStore.setItemAsync('soundEnabled', String(newValue));
-    } catch (error) {
-      console.error('Error saving sound setting:', error);
-    }
-  }, [soundEnabled]);
 
   const changeDifficulty = useCallback(() => {
     const difficulties = ['Easy', 'Medium', 'Hard', 'Extreme'];
@@ -111,51 +92,40 @@ export const GameProvider = ({ children }) => {
 
   const endGame = useCallback(async (finalScore) => {
     setIsPlaying(false);
-    
-    // Update high scores if needed
     const updatedHighScores = { ...highScores };
-    
     if (finalScore > updatedHighScores.userScore) {
       updatedHighScores.userScore = finalScore;
     }
-    
-    // Check if score makes it to top 5
     const topScores = [...(updatedHighScores.highScores || [])];
     topScores.push(['Anonymous', finalScore]);
     topScores.sort((a, b) => b[1] - a[1]);
     updatedHighScores.highScores = topScores.slice(0, 5);
-    
     await saveHighScores(updatedHighScores);
   }, [highScores, saveHighScores]);
 
-  const updateScore = useCallback((tilesRevealed) => {
+  const updateScore = useCallback(() => {
     const config = difficultyConfig[difficulty];
     const pointsToAdd = config.pointsPerTile;
     setScore((prevScore) => prevScore + pointsToAdd);
-  }, [difficulty, difficultyConfig]);
+  }, [difficulty]);
 
   const nextLevel = useCallback(() => {
     setLevel((prevLevel) => prevLevel + 1);
-    // Apply level bonus
     const config = difficultyConfig[difficulty];
     const bonus = Math.floor(score * (config.bonusMultiplier - 1));
     setScore((prevScore) => prevScore + bonus);
-  }, [difficulty, score, difficultyConfig]);
+  }, [difficulty, score]);
 
   const getCurrentConfig = useCallback(() => {
     return difficultyConfig[difficulty];
-  }, [difficulty, difficultyConfig]);
+  }, [difficulty]);
 
   const value = {
-    // State
     difficulty,
     level,
     score,
     highScores,
     isPlaying,
-    soundEnabled,
-    
-    // Actions
     setDifficulty,
     changeDifficulty,
     setLevel,
@@ -164,7 +134,6 @@ export const GameProvider = ({ children }) => {
     startGame,
     endGame,
     nextLevel,
-    toggleSound,
     saveHighScores,
     getCurrentConfig,
   };

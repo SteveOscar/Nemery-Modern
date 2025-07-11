@@ -2,26 +2,20 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
-  StyleSheet,
-  Animated,
-  Easing,
   Image,
   Dimensions,
-  TouchableOpacity,
+  StyleSheet,
+  Animated,
 } from 'react-native';
-import { colors } from '../constants/colors';
 import { useSound } from '../contexts/SoundContext';
 import { useGame } from '../contexts/GameContext';
-import CardFlip from 'react-native-card-flip';
 import { useNavigation } from '@react-navigation/native';
+import Board from '../components/Board';
+import Overlay from '../components/Overlay';
+import InfoBar from '../components/InfoBar';
+import QuitButton from '../components/QuitButton';
 
 const { width, height } = Dimensions.get('window');
-const CELL_SIZE = Math.floor(width * 0.2);
-const CELL_PADDING = Math.floor(CELL_SIZE * 0.07);
-const BORDER_RADIUS = CELL_PADDING * 1;
-const TILE_SIZE = CELL_SIZE - CELL_PADDING * 2;
-const LETTER_SIZE = Math.floor(TILE_SIZE * 0.70);
 
 function maxNumber(difficulty, level) {
   if (difficulty === 'Extreme') return Math.min(16 * level, 99);
@@ -34,23 +28,12 @@ function maxNumber(difficulty, level) {
 function generateNumbers(size, difficulty, level) {
   const length = size[0] * size[1];
   const max = maxNumber(difficulty, level);
-  
-  // If we need more unique numbers than available, use a larger range
   const actualMax = Math.max(max, length);
-  
-  // Generate all possible numbers and shuffle them
-  let allNumbers = [];
-  for (let i = 0; i < actualMax; i++) {
-    allNumbers.push(i);
-  }
-  
-  // Fisher-Yates shuffle
+  let allNumbers = Array.from({ length: actualMax }, (_, i) => i);
   for (let i = allNumbers.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]];
   }
-  
-  // Take the first 'length' numbers
   return allNumbers.slice(0, length);
 }
 
@@ -70,152 +53,88 @@ function gameStartDelay(difficulty, difficultyFactor) {
   return difficultyFactor;
 }
 
-function levelTimeAdjustment(baseTime, level) {
-  let result = 100;
-  for (let i = 0; i < level; i++) {
-    result = result * 0.9;
-  }
-  return result / 100;
-}
-
-// Overlay component for success/failure messages
-const Overlay = ({ visible, message, type, anim }) => {
-  if (!visible) return null;
-  return (
-    <Animated.View
-      style={[
-        styles.overlay,
-        type === 'success' ? styles.overlaySuccess : styles.overlayFail,
-        {
-          opacity: anim,
-          transform: [
-            {
-              scale: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.7, 1.1],
-              }),
-            },
-          ],
-        },
-      ]}
-    >
-      <Text style={styles.overlayText}>{message}</Text>
-    </Animated.View>
-  );
-};
-
-const GameScreen = ({
-  sound = true,
-  updateScore = () => {},
-  deliverVerdict = () => {},
-  endGame = () => {},
-}) => {
-  // --- State ---
-  const { difficulty, level, getCurrentConfig, score, nextLevel } = useGame();
+const GameScreen = () => {
+  const { difficulty, level, getCurrentConfig, score, nextLevel, updateScore, endGame } = useGame();
   const navigation = useNavigation();
   const config = getCurrentConfig();
   const size = config.gridSize;
+  const totalTiles = size[0] * size[1];
 
-  // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const overlayAnim = useRef(new Animated.Value(0)).current;
 
-  // Board state
-  const [tileScales, setTileScales] = useState(() =>
-    Array(size[0] * size[1])
-      .fill()
-      .map(() => new Animated.Value(1))
-  );
-  const [prevSelection, setPrevSelection] = useState('');
-  const [numbers, setNumbers] = useState(Array(size[0] * size[1]).fill(''));
-  const [hiddenLetters, setHiddenLetters] = useState(() => generateNumbers(size, difficulty, level));
+  const tileScales = useRef(Array(totalTiles).fill().map(() => new Animated.Value(1))).current;
+  const cardRefs = useRef(Array(totalTiles).fill().map(() => React.createRef())).current;
+  const [prevSelection, setPrevSelection] = useState(-1);
+  const [numbers, setNumbers] = useState(Array(totalTiles).fill(''));
+  const [hiddenLetters, setHiddenLetters] = useState(generateNumbers(size, difficulty, level));
   const [beenClicked, setBeenClicked] = useState([]);
   const [inPlay, setInPlay] = useState(false);
 
-  // --- Overlay State ---
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayMessage, setOverlayMessage] = useState('');
-  const [overlayType, setOverlayType] = useState('success'); // 'success' or 'fail'
-  const overlayAnim = useRef(new Animated.Value(0)).current;
+  const [overlayType, setOverlayType] = useState('success');
 
-  // --- Sound ---
   const { playSound } = useSound();
   const playButtonSound = useCallback(() => playSound('tap'), [playSound]);
   const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
   const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
 
-  // --- Tile helpers ---
-  const cardRefs = useRef(Array(size[0] * size[1]).fill().map(() => React.createRef()));
+  const flipTile = useCallback((id) => {
+    cardRefs[id]?.current?.flip();
+  }, [cardRefs]);
 
-  // Show a single tile
   const initialSingleTileShow = useCallback(
     (id) => {
-      if (beenClicked.indexOf(id) !== -1) return;
-      if (cardRefs.current[id] && cardRefs.current[id].current) {
-        cardRefs.current[id].current.flip();
-      }
+      if (beenClicked.includes(id)) return;
+      flipTile(id);
       setNumbers((prev) => {
         const next = [...prev];
         next[id] = hiddenLetters[id];
         return next;
       });
     },
-    [beenClicked, cardRefs, hiddenLetters]
+    [beenClicked, flipTile, hiddenLetters]
   );
 
-  // Hide a single tile
   const tileHide = useCallback(
     (id) => {
-      if (cardRefs.current[id] && cardRefs.current[id].current) {
-        cardRefs.current[id].current.flip();
-      }
+      flipTile(id);
       setNumbers((prev) => {
         const next = [...prev];
         next[id] = '';
         return next;
       });
     },
-    [cardRefs]
+    [flipTile]
   );
 
-  // Stagger show tiles
   const staggerShow = useCallback(() => {
-    const totalTiles = size[0] * size[1];
     for (let i = 0; i < totalTiles; i++) {
       setTimeout(() => initialSingleTileShow(i), i * 50);
     }
-  }, [initialSingleTileShow, size]);
+  }, [initialSingleTileShow, totalTiles]);
 
-  // Stagger hide tiles
   const staggerHide = useCallback(() => {
-    const totalTiles = size[0] * size[1];
     for (let i = 0; i < totalTiles; i++) {
       setTimeout(() => tileHide(i), i * 50);
     }
-  }, [tileHide, size]);
+  }, [tileHide, totalTiles]);
 
-  // Show all tiles, then optionally hide them
   const showTiles = useCallback(
     (shouldHide) => {
       setTimeout(staggerShow, 500);
       if (shouldHide) {
         const difficultyFactor = timeAdjustment(difficulty) * 1.3;
         setTimeout(staggerHide, 2500 * difficultyFactor);
-        hideTiles();
+        const delay = gameStartDelay(difficulty, difficultyFactor);
+        setTimeout(() => setInPlay(true), 3500 * delay);
       }
     },
-    [staggerShow, staggerHide, difficulty, hideTiles]
+    [difficulty, staggerShow, staggerHide]
   );
 
-  // Hide all tiles after a delay, then start the game
-  const hideTiles = useCallback(() => {
-    const difficultyFactor = timeAdjustment(difficulty) * 1.3;
-    setTimeout(() => {
-      setInPlay(true);
-    }, 3500 * gameStartDelay(difficulty, difficultyFactor));
-  }, [difficulty, gameStartDelay]);
-
-  // --- Overlay logic ---
-  const showOverlay = (message, type = 'success', callback) => {
+  const showOverlay = useCallback((message, type = 'success', callback) => {
     setOverlayMessage(message);
     setOverlayType(type);
     setOverlayVisible(true);
@@ -237,47 +156,38 @@ const GameScreen = ({
         });
       }, 1200);
     });
-  };
+  }, [overlayAnim]);
 
-  // --- Effects ---
-  // Fade in and show tiles on mount
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1300,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }).start();
     showTiles(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [showTiles]);
 
-  // Show tiles for new level when level changes (not on initial mount)
   useEffect(() => {
     if (level > 1) {
       showTiles(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level]);
+  }, [level, showTiles]);
 
-  // --- Tile click logic ---
   const alreadyClicked = useCallback(
     (id) => {
-      if (beenClicked.indexOf(id) !== -1) return true;
+      if (beenClicked.includes(id)) return true;
       setBeenClicked((prev) => [...prev, id]);
       return false;
     },
     [beenClicked]
   );
 
-  // Handle tile click
   const clickTile = useCallback(
     (id) => {
       if (!inPlay) return;
       if (alreadyClicked(id)) return;
       playButtonSound();
-      if (cardRefs.current[id] && cardRefs.current[id].current) {
-        cardRefs.current[id].current.flip();
-      }
+      flipTile(id);
       const scale = tileScales[id];
       Animated.sequence([
         Animated.timing(scale, {
@@ -297,101 +207,41 @@ const GameScreen = ({
         const selected = next[id];
         if (selected >= prevSelection) {
           setPrevSelection(selected);
-          updateScore(next.filter((n) => n !== '').length);
+          updateScore();
           if (next.every((n) => n !== '')) {
             setInPlay(false);
             playVictorySound();
             showOverlay('Level Complete!', 'success', () => {
               nextLevel();
-              setPrevSelection('');
+              setPrevSelection(-1);
               setBeenClicked([]);
-              setNumbers(Array(size[0] * size[1]).fill(''));
+              setNumbers(Array(totalTiles).fill(''));
               setHiddenLetters(generateNumbers(size, difficulty, level + 1));
               setInPlay(false);
             });
           }
         } else {
           playGameOverSound();
-          deliverVerdict(false);
           setInPlay(false);
           showOverlay('Game Over', 'fail', () => {
             showTiles(false);
-            endGame();
+            endGame(score);
             navigation.navigate('Menu');
           });
         }
         return next;
       });
     },
-    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, cardRefs, tileScales, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame, playVictorySound, nextLevel, navigation, size, difficulty, level]
+    [inPlay, alreadyClicked, playButtonSound, flipTile, tileScales, hiddenLetters, prevSelection, updateScore, playVictorySound, showOverlay, nextLevel, size, difficulty, level, playGameOverSound, showTiles, endGame, score, navigation, totalTiles]
   );
 
-  // Handle quit button
   const handleQuit = () => {
-    endGame();
+    endGame(score);
     navigation.navigate('Menu');
   };
 
-  // --- Render helpers ---
-  // Render a single tile
-  const renderTile = (id, letter) => (
-    <Animated.View
-      key={id}
-      style={[
-        styles.tile,
-        {
-          left: (id % size[0]) * CELL_SIZE + CELL_PADDING,
-          top: Math.floor(id / size[0]) * CELL_SIZE + CELL_PADDING,
-          transform: [{ scale: tileScales[id] }],
-        },
-      ]}
-    >
-      <CardFlip
-        ref={cardRefs.current[id]}
-        style={styles.cardFlip}
-        duration={600}
-        flipDirection="y"
-        perspective={1000}
-      >
-        <View
-          style={styles.tileFace}
-          onStartShouldSetResponder={() => {
-            clickTile(id);
-            return true;
-          }}
-        >
-          {/* Hidden side (back) */}
-          <Text allowFontScaling={false} style={styles.backText}>?</Text>
-        </View>
-        <View
-          style={styles.tileFace}
-          onStartShouldSetResponder={() => {
-            clickTile(id);
-            return true;
-          }}
-        >
-          <Text allowFontScaling={false} style={styles.letter}>
-            {letter}
-          </Text>
-        </View>
-      </CardFlip>
-    </Animated.View>
-  );
-
-  // Render all tiles
-  const renderTiles = () => {
-    const result = [];
-    for (let id = 0; id < size[0] * size[1]; id++) {
-      result.push(renderTile(id, numbers[id]));
-    }
-    return result;
-  };
-
-  // --- Main render ---
-  const dimensionWidth = CELL_SIZE * size[0];
-  const dimensionHeight = CELL_SIZE * size[1];
   return (
-    <View style={{ width: width, flex: 1 }}>
+    <View style={{ width, flex: 1 }}>
       <Image
         source={require('../../assets/images/backgroundBottom.png')}
         style={styles.backgroundBottom}
@@ -402,32 +252,22 @@ const GameScreen = ({
         style={styles.backgroundTop}
         resizeMode="cover"
       />
-      {/* Quit button in top right */}
-      <TouchableOpacity style={styles.quitButton} onPress={handleQuit}>
-        <Text style={styles.quitButtonText}>Quit</Text>
-      </TouchableOpacity>
-      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}> 
-        {/* Overlay for success/failure */}
+      <QuitButton onPress={handleQuit} />
+      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}>
         <Overlay
           visible={overlayVisible}
           message={overlayMessage}
           type={overlayType}
           anim={overlayAnim}
         />
-        {/* Score and Level above timer */}
-        <View style={styles.infoBar}>
-          <Text style={styles.infoText}>Score: {score}</Text>
-          <Text style={styles.infoText}>Level: {level}</Text>
-        </View>
-        <View
-          style={{
-            width: dimensionWidth,
-            height: dimensionHeight,
-            alignSelf: 'center',
-          }}
-        >
-          {renderTiles()}
-        </View>
+        <InfoBar score={score} level={level} />
+        <Board
+          size={size}
+          numbers={numbers}
+          tileScales={tileScales}
+          cardRefs={cardRefs}
+          onTilePress={clickTile}
+        />
       </Animated.View>
     </View>
   );
@@ -438,51 +278,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  tile: {
-    position: 'absolute',
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-    borderRadius: BORDER_RADIUS,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cardFlip: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-  },
-  tileFace: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-    borderRadius: BORDER_RADIUS,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-    borderWidth: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  letter: {
-    color: colors.secondary,
-    fontSize: LETTER_SIZE,
-    backgroundColor: 'transparent',
-    fontFamily: 'System',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 1, height: 1 },
-    fontWeight: 'bold',
-  },
-  backText: {
-    color: colors.primary,
-    fontSize: LETTER_SIZE,
-    backgroundColor: 'transparent',
-    fontFamily: 'System',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 1, height: 1 },
-    fontWeight: 'bold',
   },
   backgroundBottom: {
     position: 'absolute',
@@ -497,77 +292,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: height * -0.3,
-  },
-  infoBar: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    marginTop: 32,
-    marginBottom: 8,
-  },
-  infoText: {
-    color: colors.secondary,
-    fontSize: 22,
-    fontWeight: 'bold',
-    backgroundColor: 'transparent',
-    fontFamily: 'System',
-    textShadowColor: colors.primary,
-    textShadowOffset: { width: 1, height: 1 },
-  },
-  quitButton: {
-    position: 'absolute',
-    top: 40,
-    right: 24,
-    zIndex: 10,
-    backgroundColor: colors.secondaryLight,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  quitButtonText: {
-    color: colors.primary,
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-  overlay: {
-    position: 'absolute',
-    top: '40%',
-    left: '10%',
-    right: '10%',
-    zIndex: 20,
-    padding: 32,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  overlaySuccess: {
-    backgroundColor: 'rgba(50, 205, 50, 0.95)',
-  },
-  overlayFail: {
-    backgroundColor: 'rgba(220, 20, 60, 0.95)',
-  },
-  overlayText: {
-    color: '#fff',
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    letterSpacing: 2,
-    textShadowColor: '#222',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
   },
 });
 
