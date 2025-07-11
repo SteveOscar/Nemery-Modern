@@ -123,11 +123,6 @@ const GameScreen = ({
   const timerText = useRef(new Animated.Value(0)).current;
 
   // Board state
-  const [boardTilt, setBoardTilt] = useState(() =>
-    Array(size[0] * size[1])
-      .fill(0)
-      .map(() => new Animated.Value(0))
-  );
   const [prevSelection, setPrevSelection] = useState('');
   const [numbers, setNumbers] = useState(Array(size[0] * size[1]).fill(''));
   const [hiddenLetters, setHiddenLetters] = useState(() => generateNumbers(size, difficulty, level));
@@ -337,16 +332,8 @@ const GameScreen = ({
         }
         return next;
       });
-      const tilt = boardTilt[id];
-      tilt.setValue(1);
-      Animated.timing(tilt, {
-        toValue: 2,
-        duration: 300,
-        easing: Easing.spring,
-        useNativeDriver: false,
-      }).start();
     },
-    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, boardTilt, cardRefs, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame, playVictorySound, nextLevel, navigation, size, difficulty, level]
+    [inPlay, alreadyClicked, playButtonSound, hiddenLetters, cardRefs, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame, playVictorySound, nextLevel, navigation, size, difficulty, level]
   );
 
   // Timer end logic
@@ -385,9 +372,9 @@ const GameScreen = ({
       <CardFlip
         ref={cardRefs.current[id]}
         style={styles.cardFlip}
-        duration={800}
+        duration={400}
         flipDirection="y"
-        perspective={600}
+        perspective={1000}
       >
         <View
           style={styles.tileFace}
@@ -491,9 +478,6 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-    borderWidth: 3,
   },
   cardFlip: {
     width: TILE_SIZE,
@@ -506,6 +490,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+    borderWidth: 3,
   },
   letter: {
     color: colors.secondary,
