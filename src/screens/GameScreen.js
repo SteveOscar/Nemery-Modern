@@ -118,9 +118,6 @@ const GameScreen = ({
 
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const progress = useRef(new Animated.Value(width)).current;
-  const timerHeight = useRef(new Animated.Value(0)).current;
-  const timerText = useRef(new Animated.Value(0)).current;
 
   // Board state
   const [tileScales, setTileScales] = useState(() =>
@@ -213,22 +210,9 @@ const GameScreen = ({
   const hideTiles = useCallback(() => {
     const difficultyFactor = timeAdjustment(difficulty) * 1.3;
     setTimeout(() => {
-      Animated.timing(timerText, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: false,
-      }).start();
-      Animated.timing(timerHeight, {
-        toValue: height * 0.05,
-        duration: 1800,
-        useNativeDriver: false,
-      }).start();
-    }, 2500 * difficultyFactor);
-    setTimeout(() => {
       setInPlay(true);
-      startTimer();
     }, 3500 * gameStartDelay(difficulty, difficultyFactor));
-  }, [difficulty, timerHeight, timerText, startTimer]);
+  }, [difficulty, gameStartDelay]);
 
   // --- Overlay logic ---
   const showOverlay = (message, type = 'success', callback) => {
@@ -274,26 +258,6 @@ const GameScreen = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level]);
-
-  // Animate the timer and call handleTimerEnd after timer duration
-  const startTimer = useCallback(() => {
-    Animated.timing(timerText, {
-      toValue: 0,
-      duration: 1000,
-      useNativeDriver: false,
-    }).start();
-    const baseTime = 3500;
-    const difficultyFactor = timeAdjustment(difficulty) * 1.2;
-    const timerDuration = baseTime * difficultyFactor * levelTimeAdjustment(baseTime, level);
-    Animated.timing(progress, {
-      toValue: 0,
-      duration: timerDuration,
-      useNativeDriver: false,
-    }).start();
-    setTimeout(() => {
-      handleTimerEnd();
-    }, timerDuration);
-  }, [difficulty, level, progress, timerText, handleTimerEnd]);
 
   // --- Tile click logic ---
   const alreadyClicked = useCallback(
@@ -361,20 +325,6 @@ const GameScreen = ({
     },
     [inPlay, alreadyClicked, playButtonSound, hiddenLetters, cardRefs, tileScales, prevSelection, updateScore, playGameOverSound, deliverVerdict, setInPlay, showTiles, endGame, playVictorySound, nextLevel, navigation, size, difficulty, level]
   );
-
-  // Timer end logic
-  const handleTimerEnd = useCallback(() => {
-    const length = size[0] * size[1];
-    if (!inPlay || beenClicked.length === length) return;
-    playGameOverSound();
-    deliverVerdict(false);
-    setInPlay(false);
-    showOverlay('Game Over', 'fail', () => {
-      showTiles(false);
-      endGame();
-      navigation.navigate('Menu');
-    });
-  }, [inPlay, beenClicked, size, playGameOverSound, deliverVerdict, showTiles, endGame, navigation]);
 
   // Handle quit button
   const handleQuit = () => {
@@ -469,16 +419,6 @@ const GameScreen = ({
           <Text style={styles.infoText}>Score: {score}</Text>
           <Text style={styles.infoText}>Level: {level}</Text>
         </View>
-        <View style={styles.timerContainer}>
-          <Animated.View
-            style={[
-              styles.timer,
-              { height: timerHeight, width: progress },
-            ]}
-          >
-            <Animated.Text style={[styles.timerText, { opacity: timerText }]}>TIMER</Animated.Text>
-          </Animated.View>
-        </View>
         <View
           style={{
             width: dimensionWidth,
@@ -543,29 +483,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'black',
     textShadowOffset: { width: 1, height: 1 },
     fontWeight: 'bold',
-  },
-  timerContainer: {
-    width: '100%',
-    height: height * 0.1,
-    marginBottom: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  timer: {
-    height: height * 0.05,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.secondaryLight,
-    borderRadius: 5,
-    opacity: 0.9,
-  },
-  timerText: {
-    color: colors.secondary,
-    backgroundColor: 'transparent',
-    fontFamily: 'System',
-    fontSize: width * 0.05,
-    textShadowColor: colors.primary,
-    textShadowOffset: { width: 1, height: 1 },
   },
   backgroundBottom: {
     position: 'absolute',
