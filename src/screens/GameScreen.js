@@ -187,37 +187,56 @@ const GameScreen = () => {
       setNumbers((prev) => {
         const next = [...prev];
         next[id] = hiddenNumbers[id];
-        const selected = next[id];
-        if (selected >= prevSelection) {
-          setPrevSelection(selected);
-          updateScore();
-          if (next.every((n) => n !== '')) {
-            setInPlay(false);
-            playVictorySound();
-            showOverlay('Level Complete!', 'success', () => {
-              nextLevel();
-              setPrevSelection(-1);
-              setBeenClicked([]);
-              setNumbers(Array(totalTiles).fill(''));
-              setTileFlipped(Array(totalTiles).fill(false));
-              setHiddenNumbers(generateNumbers(size, difficulty, level + 1));
-              setInPlay(false);
-            });
-          }
-        } else {
-          playGameOverSound();
-          setInPlay(false);
-          showOverlay('Game Over', 'fail', () => {
-            showTiles(false);
-            endGame(score);
-            navigation.navigate('Menu');
-          });
-        }
         return next;
       });
+      setBeenClicked((prev) => [...prev, id]);
     },
-    [inPlay, alreadyClicked, playButtonSound, tileScales, hiddenNumbers, prevSelection, updateScore, playVictorySound, showOverlay, nextLevel, size, difficulty, level, playGameOverSound, showTiles, endGame, score, navigation, totalTiles]
+    [inPlay, alreadyClicked, playButtonSound, tileScales, hiddenNumbers]
   );
+
+  // Side effect for win/lose/game logic
+  useEffect(() => {
+    // Only run if inPlay is true
+    if (!inPlay) return;
+    // Find the most recently revealed tile
+    const lastClicked = beenClicked[beenClicked.length - 1];
+    if (lastClicked === undefined) return;
+    const selected = numbers[lastClicked];
+    if (selected === undefined || selected === '') return;
+    // Check if the selection is valid
+    if (selected >= prevSelection) {
+      // Valid selection
+      const uniqueRevealed = new Set(beenClicked);
+      if (uniqueRevealed.size === totalTiles) {
+        // All unique tiles revealed, level complete
+        setInPlay(false);
+        playVictorySound();
+        showOverlay('Level Complete!', 'success', () => {
+          nextLevel();
+          setPrevSelection(-1);
+          setBeenClicked([]);
+          setNumbers(Array(totalTiles).fill(''));
+          setTileFlipped(Array(totalTiles).fill(false));
+          setHiddenNumbers(generateNumbers(size, difficulty, level + 1));
+          setInPlay(false);
+        });
+      } else {
+        // Not done yet, update score and prevSelection
+        updateScore();
+        setPrevSelection(selected);
+      }
+    } else {
+      // Invalid selection, game over
+      playGameOverSound();
+      setInPlay(false);
+      showOverlay('Game Over', 'fail', () => {
+        showTiles(false);
+        endGame(score);
+        navigation.navigate('Menu');
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [beenClicked]);
 
   const handleQuit = () => {
     endGame(score);
