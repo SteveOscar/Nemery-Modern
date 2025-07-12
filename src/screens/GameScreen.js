@@ -64,7 +64,8 @@ const GameScreen = () => {
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
   const tileScales = useRef(Array(totalTiles).fill().map(() => new Animated.Value(1))).current;
-  const cardRefs = useRef(Array(totalTiles).fill().map(() => React.createRef())).current;
+  // Remove cardRefs, use tileFlipped state
+  const [tileFlipped, setTileFlipped] = useState(Array(totalTiles).fill(false));
   const [prevSelection, setPrevSelection] = useState(-1);
   const [numbers, setNumbers] = useState(Array(totalTiles).fill(''));
   const [hiddenNumbers, setHiddenNumbers] = useState(generateNumbers(size, difficulty, level));
@@ -80,53 +81,35 @@ const GameScreen = () => {
   const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
   const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
 
-  const flipTile = useCallback((id) => {
-    cardRefs[id]?.current?.flip();
-  }, [cardRefs]);
+  // Remove flipTile and ref logic
 
-  const initialSingleTileShow = useCallback(
-    (id) => {
-      if (beenClicked.includes(id)) return;
-      flipTile(id);
-      setNumbers((prev) => {
-        const next = [...prev];
-        next[id] = hiddenNumbers[id];
-        return next;
-      });
-    },
-    [beenClicked, flipTile, hiddenNumbers]
-  );
+  // Show all numbers (unflipped)
+  const showAllNumbers = useCallback(() => {
+    setTileFlipped(Array(totalTiles).fill(false));
+    setNumbers(hiddenNumbers);
+  }, [totalTiles, hiddenNumbers]);
 
-  const tileHide = useCallback(
-    (id) => {
-      flipTile(id);
-    },
-    [flipTile]
-  );
+  // Hide all numbers (flipped)
+  const hideAllNumbers = useCallback(() => {
+    setTileFlipped(Array(totalTiles).fill(true));
+    setNumbers(Array(totalTiles).fill(''));
+  }, [totalTiles]);
 
-  const staggerShow = useCallback(() => {
-    for (let i = 0; i < totalTiles; i++) {
-      setTimeout(() => initialSingleTileShow(i), i * 50);
-    }
-  }, [initialSingleTileShow, totalTiles]);
-
-  const staggerHide = useCallback(() => {
-    for (let i = 0; i < totalTiles; i++) {
-      setTimeout(() => tileHide(i), i * 50);
-    }
-  }, [tileHide, totalTiles]);
-
+  // Show/hide tiles with memorization delay
   const showTiles = useCallback(
     (shouldHide) => {
-      setTimeout(staggerShow, 500);
-      if (shouldHide) {
-        const difficultyFactor = timeAdjustment(difficulty) * 1.3;
-        setTimeout(staggerHide, 2500 * difficultyFactor);
-        const delay = gameStartDelay(difficulty, difficultyFactor);
-        setTimeout(() => setInPlay(true), 3500 * delay);
-      }
+      setTimeout(() => {
+        showAllNumbers();
+        if (shouldHide) {
+          const difficultyFactor = timeAdjustment(difficulty) * 1.3;
+          setTimeout(() => {
+            hideAllNumbers();
+            setInPlay(true);
+          }, 2500 * difficultyFactor);
+        }
+      }, 500);
     },
-    [difficulty, staggerShow, staggerHide]
+    [difficulty, showAllNumbers, hideAllNumbers]
   );
 
   const showOverlay = useCallback((message, type = 'success', callback) => {
@@ -159,7 +142,6 @@ const GameScreen = () => {
       duration: 1300,
       useNativeDriver: true,
     }).start();
-    // the true param below is to tell the function to hide the tiles again after a delay
     showTiles(true);
   }, [showTiles]);
 
@@ -183,7 +165,12 @@ const GameScreen = () => {
       if (!inPlay) return;
       if (alreadyClicked(id)) return;
       playButtonSound();
-      flipTile(id);
+      // Unflip the tile to show the number
+      setTileFlipped((prev) => {
+        const next = [...prev];
+        next[id] = false;
+        return next;
+      });
       const scale = tileScales[id];
       Animated.sequence([
         Animated.timing(scale, {
@@ -212,6 +199,7 @@ const GameScreen = () => {
               setPrevSelection(-1);
               setBeenClicked([]);
               setNumbers(Array(totalTiles).fill(''));
+              setTileFlipped(Array(totalTiles).fill(false));
               setHiddenNumbers(generateNumbers(size, difficulty, level + 1));
               setInPlay(false);
             });
@@ -228,7 +216,7 @@ const GameScreen = () => {
         return next;
       });
     },
-    [inPlay, alreadyClicked, playButtonSound, flipTile, tileScales, hiddenNumbers, prevSelection, updateScore, playVictorySound, showOverlay, nextLevel, size, difficulty, level, playGameOverSound, showTiles, endGame, score, navigation, totalTiles]
+    [inPlay, alreadyClicked, playButtonSound, tileScales, hiddenNumbers, prevSelection, updateScore, playVictorySound, showOverlay, nextLevel, size, difficulty, level, playGameOverSound, showTiles, endGame, score, navigation, totalTiles]
   );
 
   const handleQuit = () => {
@@ -249,7 +237,7 @@ const GameScreen = () => {
         resizeMode="cover"
       />
       <QuitButton onPress={handleQuit} />
-      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}> 
         <Overlay
           visible={overlayVisible}
           message={overlayMessage}
@@ -261,7 +249,7 @@ const GameScreen = () => {
           size={size}
           numbers={numbers}
           tileScales={tileScales}
-          cardRefs={cardRefs}
+          tileFlipped={tileFlipped}
           onTilePress={clickTile}
         />
       </Animated.View>

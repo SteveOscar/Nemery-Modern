@@ -23,7 +23,7 @@ import { useUser } from '../contexts/UserContext';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
 import { colors } from '../constants/colors';
-import CardFlip from 'react-native-card-flip';
+// import CardFlip from 'react-native-card-flip';
 
 const { width, height } = Dimensions.get('window');
 
@@ -117,7 +117,7 @@ const MenuScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <CardFlip
+        {/* <CardFlip
           ref={cardRef}
           style={styles.iconWrapper}
           duration={1500}
@@ -138,7 +138,7 @@ const MenuScreen = () => {
               resizeMode="contain"
             />
           </View>
-        </CardFlip>
+        </CardFlip> */}
       </View>
 
       <View style={styles.menuContainer}>
