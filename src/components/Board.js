@@ -15,14 +15,14 @@ const Board = ({ size, numbers, tileScales, cardRefs, onTilePress }) => {
     const row = Math.floor(id / cols);
     const left = col * CELL_SIZE + CELL_PADDING;
     const top = row * CELL_SIZE + CELL_PADDING;
-    const letter = numbers[id];
+    const number = numbers[id];
     tiles.push(
       <Tile
         key={id}
         left={left}
         top={top}
         scale={tileScales[id]}
-        letter={letter}
+        number={number}
         cardRef={cardRefs[id]}
         onPress={() => onTilePress(id)}
       />

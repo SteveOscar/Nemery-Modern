@@ -67,7 +67,7 @@ const GameScreen = () => {
   const cardRefs = useRef(Array(totalTiles).fill().map(() => React.createRef())).current;
   const [prevSelection, setPrevSelection] = useState(-1);
   const [numbers, setNumbers] = useState(Array(totalTiles).fill(''));
-  const [hiddenLetters, setHiddenLetters] = useState(generateNumbers(size, difficulty, level));
+  const [hiddenNumbers, setHiddenNumbers] = useState(generateNumbers(size, difficulty, level));
   const [beenClicked, setBeenClicked] = useState([]);
   const [inPlay, setInPlay] = useState(false);
 
@@ -90,21 +90,16 @@ const GameScreen = () => {
       flipTile(id);
       setNumbers((prev) => {
         const next = [...prev];
-        next[id] = hiddenLetters[id];
+        next[id] = hiddenNumbers[id];
         return next;
       });
     },
-    [beenClicked, flipTile, hiddenLetters]
+    [beenClicked, flipTile, hiddenNumbers]
   );
 
   const tileHide = useCallback(
     (id) => {
       flipTile(id);
-      setNumbers((prev) => {
-        const next = [...prev];
-        next[id] = '';
-        return next;
-      });
     },
     [flipTile]
   );
@@ -164,6 +159,7 @@ const GameScreen = () => {
       duration: 1300,
       useNativeDriver: true,
     }).start();
+    // the true param below is to tell the function to hide the tiles again after a delay
     showTiles(true);
   }, [showTiles]);
 
@@ -203,7 +199,7 @@ const GameScreen = () => {
       ]).start();
       setNumbers((prev) => {
         const next = [...prev];
-        next[id] = hiddenLetters[id];
+        next[id] = hiddenNumbers[id];
         const selected = next[id];
         if (selected >= prevSelection) {
           setPrevSelection(selected);
@@ -216,7 +212,7 @@ const GameScreen = () => {
               setPrevSelection(-1);
               setBeenClicked([]);
               setNumbers(Array(totalTiles).fill(''));
-              setHiddenLetters(generateNumbers(size, difficulty, level + 1));
+              setHiddenNumbers(generateNumbers(size, difficulty, level + 1));
               setInPlay(false);
             });
           }
@@ -232,7 +228,7 @@ const GameScreen = () => {
         return next;
       });
     },
-    [inPlay, alreadyClicked, playButtonSound, flipTile, tileScales, hiddenLetters, prevSelection, updateScore, playVictorySound, showOverlay, nextLevel, size, difficulty, level, playGameOverSound, showTiles, endGame, score, navigation, totalTiles]
+    [inPlay, alreadyClicked, playButtonSound, flipTile, tileScales, hiddenNumbers, prevSelection, updateScore, playVictorySound, showOverlay, nextLevel, size, difficulty, level, playGameOverSound, showTiles, endGame, score, navigation, totalTiles]
   );
 
   const handleQuit = () => {

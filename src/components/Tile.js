@@ -3,9 +3,9 @@ import React from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import CardFlip from 'react-native-card-flip';
 import { colors } from '../constants/colors';
-import { TILE_SIZE, BORDER_RADIUS, LETTER_SIZE } from '../constants/game';
+import { TILE_SIZE, BORDER_RADIUS, NUMBER_SIZE } from '../constants/game';
 
-const Tile = ({ left, top, scale, letter, cardRef, onPress }) => {
+const Tile = ({ left, top, scale, number, cardRef, onPress }) => {
   return (
     <Animated.View
       style={[
@@ -30,8 +30,8 @@ const Tile = ({ left, top, scale, letter, cardRef, onPress }) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tileFace} onPress={onPress}>
-          <Text allowFontScaling={false} style={styles.letter}>
-            {letter}
+          <Text allowFontScaling={false} style={styles.number}>
+            {number}
           </Text>
         </TouchableOpacity>
       </CardFlip>
@@ -67,9 +67,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  letter: {
+  number: {
     color: colors.secondary,
-    fontSize: LETTER_SIZE,
+    fontSize: NUMBER_SIZE,
     backgroundColor: 'transparent',
     fontFamily: 'System',
     textShadowColor: 'black',
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     color: colors.primary,
-    fontSize: LETTER_SIZE,
+    fontSize: NUMBER_SIZE,
     backgroundColor: 'transparent',
     fontFamily: 'System',
     textShadowColor: 'black',
