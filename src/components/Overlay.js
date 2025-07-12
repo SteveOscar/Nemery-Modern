@@ -1,14 +1,19 @@
 // src/components/Overlay.js
 import React from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Overlay = ({ visible, message, type, anim }) => {
   if (!visible) return null;
+  
+  const gradientColors = type === 'success' 
+    ? ['rgba(76, 175, 80, 0.9)', 'rgba(129, 199, 132, 0.9)']
+    : ['rgba(244, 67, 54, 0.9)', 'rgba(239, 83, 80, 0.9)'];
+    
   return (
     <Animated.View
       style={[
         styles.overlay,
-        type === 'success' ? styles.overlaySuccess : styles.overlayFail,
         {
           opacity: anim,
           transform: [
@@ -22,7 +27,14 @@ const Overlay = ({ visible, message, type, anim }) => {
         },
       ]}
     >
-      <Text style={styles.overlayText}>{message}</Text>
+      <LinearGradient
+        colors={gradientColors}
+        style={styles.overlayGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <Text style={styles.overlayText}>{message}</Text>
+      </LinearGradient>
     </Animated.View>
   );
 };
@@ -34,31 +46,32 @@ const styles = StyleSheet.create({
     left: '10%',
     right: '10%',
     zIndex: 20,
-    padding: 32,
     borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.4,
+    shadowRadius: 24,
+    elevation: 12,
+    overflow: 'hidden',
+  },
+  overlayGradient: {
+    padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  overlaySuccess: {
-    backgroundColor: 'rgba(50, 205, 50, 0.95)',
-  },
-  overlayFail: {
-    backgroundColor: 'rgba(220, 20, 60, 0.95)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   overlayText: {
-    color: '#fff',
-    fontSize: 32,
-    fontWeight: 'bold',
+    color: '#ffffff',
+    fontSize: 28,
+    fontWeight: '700',
     textAlign: 'center',
-    letterSpacing: 2,
-    textShadowColor: '#222',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+    fontFamily: 'System',
   },
 });
 

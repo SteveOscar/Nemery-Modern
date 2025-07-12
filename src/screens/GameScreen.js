@@ -2,11 +2,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
-  Image,
   Dimensions,
   StyleSheet,
   Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSound } from '../contexts/SoundContext';
 import { useGame } from '../contexts/GameContext';
 import { useNavigation } from '@react-navigation/native';
@@ -244,19 +244,21 @@ const GameScreen = () => {
   };
 
   return (
-    <View style={{ width, flex: 1 }}>
-      <Image
-        source={require('../../assets/images/backgroundBottom.png')}
-        style={styles.backgroundBottom}
-        resizeMode="cover"
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#667eea', '#764ba2', '#f093fb', '#f5576c']}
+        style={styles.backgroundGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       />
-      <Image
-        source={require('../../assets/images/backgroundTop.png')}
-        style={styles.backgroundTop}
-        resizeMode="cover"
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+        style={styles.overlayGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       />
       <QuitButton onPress={handleQuit} />
-      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}> 
+      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}>
         <Overlay
           visible={overlayVisible}
           message={overlayMessage}
@@ -277,24 +279,29 @@ const GameScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width,
+  },
+  backgroundGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  overlayGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   gameContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  backgroundBottom: {
-    position: 'absolute',
-    width: width,
-    left: 0,
-    right: 0,
-    bottom: height * -0.2,
-  },
-  backgroundTop: {
-    position: 'absolute',
-    width: width,
-    left: 0,
-    right: 0,
-    top: height * -0.3,
+    paddingHorizontal: 20,
   },
 });
 
