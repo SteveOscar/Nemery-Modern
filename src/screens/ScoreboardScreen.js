@@ -11,12 +11,12 @@ import {
   Dimensions,
   Easing,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useGame } from '../contexts/GameContext';
 import { useSound } from '../contexts/SoundContext';
 import { useUser } from '../contexts/UserContext';
 import Button from '../components/Button';
-import { colors } from '../constants/colors';
 import apiService from '../services/api';
 
 const { width, height } = Dimensions.get('window');
@@ -113,7 +113,13 @@ const ScoreboardScreen = () => {
     const medal = getMedal(index);
 
     return (
-      <View key={index} style={styles.scoreRow}>
+      <LinearGradient
+        key={index}
+        colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+        style={[styles.scoreRow, isCurrentUser && styles.currentUserRow]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
         <Text style={styles.rankText} allowFontScaling={false}>
           {medal || `${index + 1}.`}
         </Text>
@@ -136,7 +142,7 @@ const ScoreboardScreen = () => {
         >
           {points}
         </Text>
-      </View>
+      </LinearGradient>
     );
   };
 
@@ -160,6 +166,19 @@ const ScoreboardScreen = () => {
 
   return (
     <View style={styles.container}>
+      <LinearGradient
+        colors={['#667eea', '#764ba2', '#f093fb', '#f5576c']}
+        style={styles.backgroundGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+        style={styles.overlayGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -167,7 +186,7 @@ const ScoreboardScreen = () => {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={() => loadScores(true)}
-            tintColor={colors.primary}
+            tintColor="#ffffff"
           />
         }
       >
@@ -190,24 +209,45 @@ const ScoreboardScreen = () => {
 
         <Animated.View style={[styles.scoresContainer, { opacity: fadeAnim2 }]}>
           {isLoading ? (
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color="#ffffff" />
           ) : error ? (
-            <Text style={styles.errorText}>{error}</Text>
+            <LinearGradient
+              colors={['rgba(255, 107, 107, 0.2)', 'rgba(255, 107, 107, 0.1)']}
+              style={styles.errorContainer}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.errorText}>{error}</Text>
+            </LinearGradient>
           ) : sortedScores.length > 0 ? (
             sortedScores.map((score, index) => renderHighScore(score, index))
           ) : (
-            <Text style={styles.emptyText}>No scores yet!</Text>
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+              style={styles.emptyContainer}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.emptyText}>No scores yet!</Text>
+            </LinearGradient>
           )}
         </Animated.View>
 
         <Animated.View style={[styles.userScoreContainer, { opacity: fadeAnim2 }]}>
-          <View style={styles.divider} />
-          <Text style={styles.yourScoreLabel} allowFontScaling={false}>
-            Your Best:
-          </Text>
-          <Text style={styles.yourScoreValue} allowFontScaling={false}>
-            {userScore}
-          </Text>
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+            style={styles.userScoreCard}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.divider} />
+            <Text style={styles.yourScoreLabel} allowFontScaling={false}>
+              Your Best:
+            </Text>
+            <Text style={styles.yourScoreValue} allowFontScaling={false}>
+              {userScore}
+            </Text>
+          </LinearGradient>
         </Animated.View>
 
         <Animated.View style={[styles.buttonContainer, { opacity: fadeAnim3 }]}>
@@ -225,7 +265,20 @@ const ScoreboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondary,
+  },
+  backgroundGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  overlayGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   scrollContent: {
     flexGrow: 1,
@@ -242,10 +295,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: height * 0.07,
-    color: colors.text,
+    color: '#ffffff',
     fontFamily: 'System',
     textAlign: 'center',
     marginBottom: 30,
+    fontWeight: '700',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   scoresContainer: {
     minHeight: 300,
@@ -254,62 +311,95 @@ const styles = StyleSheet.create({
   scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    backgroundColor: 'white',
-    marginBottom: 8,
-    borderRadius: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginBottom: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  currentUserRow: {
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    borderWidth: 2,
   },
   rankText: {
     fontSize: height * 0.035,
     fontFamily: 'System',
-    color: colors.primary,
+    color: '#ffffff',
     width: 40,
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   nameText: {
     flex: 1,
     fontSize: height * 0.04,
     fontFamily: 'System',
-    color: colors.primary,
+    color: '#ffffff',
     marginRight: 10,
+    fontWeight: '500',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   scoreText: {
     fontSize: height * 0.04,
     fontFamily: 'System',
-    color: colors.primary,
+    color: '#ffffff',
     fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   currentUserText: {
-    color: colors.accent,
+    color: '#51cf66',
     fontWeight: 'bold',
   },
   userScoreContainer: {
     marginTop: 30,
     alignItems: 'center',
   },
+  userScoreCard: {
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+    alignItems: 'center',
+  },
   divider: {
     width: '80%',
     height: 2,
-    backgroundColor: colors.primary,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     marginBottom: 20,
-    opacity: 0.3,
   },
   yourScoreLabel: {
     fontSize: height * 0.035,
     fontFamily: 'System',
-    color: colors.text,
-    marginBottom: 5,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 8,
+    fontWeight: '600',
+    letterSpacing: 1,
   },
   yourScoreValue: {
     fontSize: height * 0.05,
     fontFamily: 'System',
-    color: colors.accent,
+    color: '#51cf66',
     fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   buttonContainer: {
     marginTop: 40,
@@ -318,17 +408,39 @@ const styles = StyleSheet.create({
   backButton: {
     width: '100%',
   },
+  errorContainer: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 107, 0.3)',
+    alignItems: 'center',
+  },
   errorText: {
     textAlign: 'center',
-    color: 'red',
+    color: '#ff6b6b',
     fontSize: 16,
     fontFamily: 'System',
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  emptyContainer: {
+    padding: 40,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
   },
   emptyText: {
     textAlign: 'center',
-    color: colors.primary,
+    color: '#ffffff',
     fontSize: 18,
     fontFamily: 'System',
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 });
 

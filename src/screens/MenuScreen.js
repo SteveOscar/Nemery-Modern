@@ -7,6 +7,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -23,7 +24,6 @@ import { useUser } from '../contexts/UserContext';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
 import { colors } from '../constants/colors';
-// import CardFlip from 'react-native-card-flip';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,8 +38,8 @@ const MenuScreen = () => {
     Array(5).fill().map(() => useSharedValue(0))
   ).current;
   
-  // Card flip ref for animation control
-  const cardRef = useRef(null);
+  // Flip card ref for animation control
+  const flipCardRef = useRef(null);
   
   const [helpText] = useState('???');
 
@@ -67,8 +67,8 @@ const MenuScreen = () => {
 
   const startFlippingAnimation = () => {
     const flipInterval = setInterval(() => {
-      if (cardRef.current) {
-        cardRef.current.flip();
+      if (flipCardRef.current) {
+        flipCardRef.current.flip();
       }
     }, 3000); // Flip every 3 seconds
 
@@ -116,29 +116,32 @@ const MenuScreen = () => {
 
   return (
     <View style={styles.container}>
+      <LinearGradient
+        colors={['#667eea', '#764ba2', '#f093fb', '#f5576c']}
+        style={styles.backgroundGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+        style={styles.overlayGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      
       <View style={styles.iconContainer}>
-        {/* <CardFlip
-          ref={cardRef}
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
           style={styles.iconWrapper}
-          duration={1500}
-          flipDirection="y"
-          perspective={800}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
-          <View style={styles.iconCard}>
-            <Image
-              source={require('../../assets/images/icon_logo.png')}
-              style={styles.icon}
-              resizeMode="contain"
-            />
-          </View>
-          <View style={styles.iconCard}>
-            <Image
-              source={require('../../assets/images/icon_logo.png')}
-              style={styles.icon}
-              resizeMode="contain"
-            />
-          </View>
-        </CardFlip> */}
+          <Image
+            source={require('../../assets/images/icon_logo.png')}
+            style={styles.icon}
+            resizeMode="contain"
+          />
+        </LinearGradient>
       </View>
 
       <View style={styles.menuContainer}>
@@ -187,9 +190,16 @@ const MenuScreen = () => {
         </Animated.View>
       </View>
 
-      <Text style={styles.welcomeText} allowFontScaling={false}>
-        Welcome, {username}!
-      </Text>
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+        style={styles.welcomeContainer}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <Text style={styles.welcomeText} allowFontScaling={false}>
+          Welcome, {username}!
+        </Text>
+      </LinearGradient>
     </View>
   );
 };
@@ -197,47 +207,77 @@ const MenuScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  backgroundGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  overlayGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   iconContainer: {
     height: height * 0.15,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 40,
   },
   iconWrapper: {
     width: width * 0.25,
     height: width * 0.25,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  iconCard: {
-    width: width * 0.25,
-    height: width * 0.25,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   icon: {
-    width: width * 0.25,
-    height: width * 0.25,
-    opacity: 0.7,
+    width: width * 0.2,
+    height: width * 0.2,
+    opacity: 0.9,
   },
   menuContainer: {
     width: width * 0.8,
     maxWidth: 300,
   },
   buttonWrapper: {
-    marginBottom: 5,
-    color: colors.white
+    marginBottom: 8,
+  },
+  welcomeContainer: {
+    position: 'absolute',
+    bottom: 60,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
   },
   welcomeText: {
-    position: 'absolute',
-    bottom: 40,
     fontSize: 18,
-    color: colors.primary,
+    color: '#ffffff',
     fontFamily: 'System',
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 });
 
