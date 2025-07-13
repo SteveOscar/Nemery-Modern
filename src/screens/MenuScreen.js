@@ -23,6 +23,7 @@ import { useSound } from '../contexts/SoundContext';
 import { useUser } from '../contexts/UserContext';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
+import AppText from '../components/AppText';
 import { colors } from '../constants/colors';
 
 const { width, height } = Dimensions.get('window');
@@ -196,9 +197,9 @@ const MenuScreen = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Text style={styles.welcomeText} allowFontScaling={false}>
+        <AppText style={styles.welcomeText} allowFontScaling={false}>
           Welcome, {username}!
-        </Text>
+        </AppText>
       </LinearGradient>
     </View>
   );

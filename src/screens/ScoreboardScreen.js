@@ -18,6 +18,7 @@ import { useSound } from '../contexts/SoundContext';
 import { useUser } from '../contexts/UserContext';
 import Button from '../components/Button';
 import apiService from '../services/api';
+import AppText from '../components/AppText';
 
 const { width, height } = Dimensions.get('window');
 
@@ -120,10 +121,10 @@ const ScoreboardScreen = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Text style={styles.rankText} allowFontScaling={false}>
+        <AppText style={styles.rankText} allowFontScaling={false}>
           {medal || `${index + 1}.`}
-        </Text>
-        <Text 
+        </AppText>
+        <AppText 
           style={[
             styles.nameText, 
             isCurrentUser && styles.currentUserText
@@ -132,8 +133,8 @@ const ScoreboardScreen = () => {
           numberOfLines={1}
         >
           {name}
-        </Text>
-        <Text 
+        </AppText>
+        <AppText 
           style={[
             styles.scoreText,
             isCurrentUser && styles.currentUserText
@@ -141,7 +142,7 @@ const ScoreboardScreen = () => {
           allowFontScaling={false}
         >
           {points}
-        </Text>
+        </AppText>
       </LinearGradient>
     );
   };
@@ -202,9 +203,9 @@ const ScoreboardScreen = () => {
         </View>
 
         <Animated.View style={{ opacity: fadeAnim1 }}>
-          <Text style={styles.title} allowFontScaling={false}>
+          <AppText style={styles.title} allowFontScaling={false}>
             The Legends
-          </Text>
+          </AppText>
         </Animated.View>
 
         <Animated.View style={[styles.scoresContainer, { opacity: fadeAnim2 }]}>
@@ -217,7 +218,7 @@ const ScoreboardScreen = () => {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.errorText}>{error}</Text>
+              <AppText style={styles.errorText}>{error}</AppText>
             </LinearGradient>
           ) : sortedScores.length > 0 ? (
             sortedScores.map((score, index) => renderHighScore(score, index))
@@ -228,7 +229,7 @@ const ScoreboardScreen = () => {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.emptyText}>No scores yet!</Text>
+              <AppText style={styles.emptyText}>No scores yet!</AppText>
             </LinearGradient>
           )}
         </Animated.View>
@@ -241,12 +242,12 @@ const ScoreboardScreen = () => {
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.divider} />
-            <Text style={styles.yourScoreLabel} allowFontScaling={false}>
+            <AppText style={styles.yourScoreLabel} allowFontScaling={false}>
               Your Best:
-            </Text>
-            <Text style={styles.yourScoreValue} allowFontScaling={false}>
+            </AppText>
+            <AppText style={styles.yourScoreValue} allowFontScaling={false}>
               {userScore}
-            </Text>
+            </AppText>
           </LinearGradient>
         </Animated.View>
 

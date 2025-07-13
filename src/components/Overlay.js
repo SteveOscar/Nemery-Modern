@@ -1,7 +1,8 @@
 // src/components/Overlay.js
 import React from 'react';
-import { Animated, StyleSheet, Text } from 'react-native';
+import { Animated, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AppText from './AppText';
 
 const Overlay = ({ visible, message, type, anim }) => {
   if (!visible) return null;
@@ -33,7 +34,7 @@ const Overlay = ({ visible, message, type, anim }) => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Text style={styles.overlayText}>{message}</Text>
+        <AppText style={styles.overlayText}>{message}</AppText>
       </LinearGradient>
     </Animated.View>
   );

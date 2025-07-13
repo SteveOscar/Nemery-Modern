@@ -8,6 +8,8 @@ import {
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
+import AppText from './AppText';
+import { theme } from '../constants/theme';
 
 const { height } = Dimensions.get('window');
 
@@ -53,12 +55,12 @@ const Button = ({ text, onPress, sound = true, style, textStyle }) => {
       onPress={handlePress}
       android_ripple={{ color: colors.accent }}
     >
-      <Text 
-        style={[styles.buttonText, textStyle]} 
+      <AppText 
+        style={[styles.buttonText, { fontFamily: theme.fontFamilyBold }, textStyle]} 
         allowFontScaling={false}
       >
         {text}
-      </Text>
+      </AppText>
     </Pressable>
   );
 };
@@ -90,7 +92,6 @@ const styles = StyleSheet.create({
     fontSize: 36,
     color: colors.white,
     fontWeight: '600',
-    fontFamily: 'system'
   },
 });
 

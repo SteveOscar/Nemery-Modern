@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AppText from './AppText';
 
 const InfoBar = ({ score, level }) => (
   <View style={styles.infoBar}>
@@ -12,13 +13,13 @@ const InfoBar = ({ score, level }) => (
       end={{ x: 1, y: 1 }}
     >
       <View style={styles.infoItem}>
-        <Text style={styles.infoLabel}>SCORE</Text>
-        <Text style={styles.infoValue}>{score}</Text>
+        <AppText style={styles.infoLabel}>SCORE</AppText>
+        <AppText style={styles.infoValue}>{score}</AppText>
       </View>
       <View style={styles.divider} />
       <View style={styles.infoItem}>
-        <Text style={styles.infoLabel}>LEVEL</Text>
-        <Text style={styles.infoValue}>{level}</Text>
+        <AppText style={styles.infoLabel}>LEVEL</AppText>
+        <AppText style={styles.infoValue}>{level}</AppText>
       </View>
     </LinearGradient>
   </View>

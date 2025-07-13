@@ -2,6 +2,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AppText from './AppText';
 
 const QuitButton = ({ onPress }) => (
   <TouchableOpacity style={styles.quitButton} onPress={onPress} activeOpacity={0.8}>
@@ -11,7 +12,7 @@ const QuitButton = ({ onPress }) => (
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
-      <Text style={styles.quitButtonText}>✕</Text>
+      <AppText style={styles.quitButtonText}>✕</AppText>
     </LinearGradient>
   </TouchableOpacity>
 );

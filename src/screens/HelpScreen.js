@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Button from '../components/Button';
+import AppText from '../components/AppText';
 
 const { width, height } = Dimensions.get('window');
 
@@ -40,7 +41,7 @@ const HelpScreen = ({ onBack }) => {
           variant="secondary"
           style={styles.backButton}
         />
-        <Text style={styles.title}>How to Play</Text>
+        <AppText style={styles.title}>How to Play</AppText>
         <View style={styles.placeholder} />
       </LinearGradient>
 
@@ -51,10 +52,10 @@ const HelpScreen = ({ onBack }) => {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.sectionTitle}>Objective</Text>
-          <Text style={styles.sectionText}>
+          <AppText style={styles.sectionTitle}>Objective</AppText>
+          <AppText style={styles.sectionText}>
             Combine tiles with the same number to reach the 2048 tile and beyond!
-          </Text>
+          </AppText>
         </LinearGradient>
 
         <LinearGradient
@@ -63,13 +64,13 @@ const HelpScreen = ({ onBack }) => {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.sectionTitle}>How to Play</Text>
-          <Text style={styles.sectionText}>
+          <AppText style={styles.sectionTitle}>How to Play</AppText>
+          <AppText style={styles.sectionText}>
             • Swipe in any direction to move all tiles in that direction{'\n'}
             • When two tiles with the same number touch, they merge into one{'\n'}
             • After each move, a new tile (2 or 4) appears on the board{'\n'}
             • The game ends when no more moves are possible
-          </Text>
+          </AppText>
         </LinearGradient>
 
         <LinearGradient
@@ -78,12 +79,12 @@ const HelpScreen = ({ onBack }) => {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.sectionTitle}>Scoring</Text>
-          <Text style={styles.sectionText}>
+          <AppText style={styles.sectionTitle}>Scoring</AppText>
+          <AppText style={styles.sectionText}>
             • Each merge gives you points equal to the value of the merged tile{'\n'}
             • Higher value tiles give more points{'\n'}
             • Try to achieve the highest score possible!
-          </Text>
+          </AppText>
         </LinearGradient>
 
         <LinearGradient
@@ -92,13 +93,13 @@ const HelpScreen = ({ onBack }) => {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.sectionTitle}>Tips</Text>
-          <Text style={styles.sectionText}>
+          <AppText style={styles.sectionTitle}>Tips</AppText>
+          <AppText style={styles.sectionText}>
             • Keep your highest value tile in a corner{'\n'}
             • Build chains of increasing values{'\n'}
             • Don't let small tiles scatter around{'\n'}
             • Plan your moves ahead
-          </Text>
+          </AppText>
         </LinearGradient>
 
         <LinearGradient
@@ -107,13 +108,13 @@ const HelpScreen = ({ onBack }) => {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.sectionTitle}>Controls</Text>
-          <Text style={styles.sectionText}>
+          <AppText style={styles.sectionTitle}>Controls</AppText>
+          <AppText style={styles.sectionText}>
             • Use the arrow buttons to move tiles{'\n'}
             • Tap "Undo" to reverse your last move{'\n'}
             • Tap "New Game" to start over{'\n'}
             • Your best score is automatically saved
-          </Text>
+          </AppText>
         </LinearGradient>
 
         <LinearGradient
@@ -122,9 +123,9 @@ const HelpScreen = ({ onBack }) => {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.footerText}>
+          <AppText style={styles.footerText}>
             Good luck and have fun playing Nemery!
-          </Text>
+          </AppText>
         </LinearGradient>
       </ScrollView>
     </SafeAreaView>

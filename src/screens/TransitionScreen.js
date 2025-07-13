@@ -8,6 +8,7 @@ import {
   Animated,
 } from 'react-native';
 import Logo from '../components/Logo';
+import AppText from '../components/AppText';
 import { colors } from '../constants/colors';
 
 const TransitionScreen = ({ 
@@ -64,7 +65,7 @@ const TransitionScreen = ({
         
         <View style={styles.messageContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.message}>{message}</Text>
+          <AppText style={styles.message}>{message}</AppText>
         </View>
       </Animated.View>
     </SafeAreaView>

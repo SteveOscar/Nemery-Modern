@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+import AppText from './AppText';
 
 const Logo = ({ size = 'medium', showText = true, style }) => {
   const getSize = () => {
@@ -32,9 +33,9 @@ const Logo = ({ size = 'medium', showText = true, style }) => {
         resizeMode="contain"
       /> */}
       {showText && (
-        <Text style={[styles.text, { fontSize: getTextSize() }]}>
+        <AppText style={[styles.text, { fontSize: getTextSize() }]}>
           Nemery
-        </Text>
+        </AppText>
       )}
     </View>
   );
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: 'white',
     textAlign: 'center',
     marginBottom: 30,
   },

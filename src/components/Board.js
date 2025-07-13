@@ -4,6 +4,7 @@ import { View, StyleSheet, Text, TouchableOpacity, Animated, Dimensions } from '
 import { LinearGradient } from 'expo-linear-gradient';
 import FlippableTile from './FlippableTile';
 import { CELL_SIZE, CELL_PADDING } from '../constants/game';
+import AppText from './AppText';
 
 const TILE_SPACING = 10;
 
@@ -55,7 +56,7 @@ const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Text style={styles.tileNumber}>{number}</Text>
+                <AppText style={styles.tileNumber}>{number}</AppText>
               </LinearGradient>
             </TouchableOpacity>
           }
@@ -71,7 +72,7 @@ const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Text style={styles.tileQuestion}>?</Text>
+                <AppText style={styles.tileQuestion}>?</AppText>
               </LinearGradient>
             </TouchableOpacity>
           }
@@ -142,7 +143,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
-    fontFamily: 'System',
   },
   tileQuestion: {
     fontSize: 32,
@@ -151,7 +151,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
-    fontFamily: 'System',
   },
 });
 
