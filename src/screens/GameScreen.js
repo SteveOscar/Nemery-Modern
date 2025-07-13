@@ -14,6 +14,7 @@ import Board from '../components/Board';
 import Overlay from '../components/Overlay';
 import InfoBar from '../components/InfoBar';
 import QuitButton from '../components/QuitButton';
+import AppText from '../components/AppText';
 
 const { width, height } = Dimensions.get('window');
 
@@ -71,6 +72,10 @@ const GameScreen = () => {
   const [hiddenNumbers, setHiddenNumbers] = useState(generateNumbers(size, difficulty, level));
   const [beenClicked, setBeenClicked] = useState([]);
   const [inPlay, setInPlay] = useState(false);
+  const [showTimerBar, setShowTimerBar] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const timerBarAnim = useRef(new Animated.Value(1)).current;
+  const timerIntervalRef = useRef(null);
 
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayMessage, setOverlayMessage] = useState('');
@@ -102,14 +107,39 @@ const GameScreen = () => {
         showAllNumbers();
         if (shouldHide) {
           const difficultyFactor = timeAdjustment(difficulty) * 1.3;
+          const duration = 2500 * difficultyFactor;
+          setShowTimerBar(true);
+          setTimerSeconds(Math.ceil(duration / 1000));
+          timerBarAnim.setValue(1);
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+          let start = Date.now();
+          timerIntervalRef.current = setInterval(() => {
+            const elapsed = Date.now() - start;
+            const remaining = Math.max(0, duration - elapsed);
+            setTimerSeconds(Math.ceil(remaining / 1000));
+            if (remaining <= 0) {
+              clearInterval(timerIntervalRef.current);
+              timerIntervalRef.current = null;
+            }
+          }, 100);
+          Animated.timing(timerBarAnim, {
+            toValue: 0,
+            duration,
+            useNativeDriver: false,
+          }).start(() => setShowTimerBar(false));
           setTimeout(() => {
             hideAllNumbers();
             setInPlay(true);
-          }, 2500 * difficultyFactor);
+            setTimerSeconds(0);
+            if (timerIntervalRef.current) {
+              clearInterval(timerIntervalRef.current);
+              timerIntervalRef.current = null;
+            }
+          }, duration);
         }
       }, 500);
     },
-    [difficulty, showAllNumbers, hideAllNumbers]
+    [difficulty, showAllNumbers, hideAllNumbers, timerBarAnim]
   );
 
   const showOverlay = useCallback((message, type = 'success', callback) => {
@@ -262,6 +292,22 @@ const GameScreen = () => {
         end={{ x: 1, y: 1 }}
       />
       <QuitButton onPress={handleQuit} />
+      {showTimerBar && (
+        <View style={styles.timerBarContainer}>
+          <AppText style={styles.timerBarText}>{timerSeconds > 0 ? timerSeconds : ''}</AppText>
+          <Animated.View
+            style={[
+              styles.timerBar,
+              {
+                width: timerBarAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, width * 0.7],
+                }),
+              },
+            ]}
+          />
+        </View>
+      )}
       <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}>
         <Overlay
           visible={overlayVisible}
@@ -306,6 +352,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 10,
+  },
+  timerBarContainer: {
+    position: 'absolute',
+    top: 200,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    marginBottom: 8,
+    zIndex: 10,
+  },
+  timerBar: {
+    height: 10,
+    borderRadius: 6,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  timerBarText: {
+    fontSize: 16,
+    color: '#fff',
+    fontFamily: 'Poppins-Regular',
   },
 });
 
