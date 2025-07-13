@@ -63,7 +63,7 @@ const GameScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
-  const tileScales = useRef(Array(totalTiles).fill().map(() => new Animated.Value(1))).current;
+  const [tileScales, setTileScales] = useState(Array(totalTiles).fill().map(() => new Animated.Value(1)));
   // Remove cardRefs, use tileFlipped state
   const [tileFlipped, setTileFlipped] = useState(Array(totalTiles).fill(false));
   const [prevSelection, setPrevSelection] = useState(-1);
@@ -150,6 +150,10 @@ const GameScreen = () => {
       showTiles(true);
     }
   }, [level, showTiles]);
+
+  useEffect(() => {
+    setTileScales(Array(totalTiles).fill().map(() => new Animated.Value(1)));
+  }, [totalTiles]);
 
   const alreadyClicked = useCallback(
     (id) => {

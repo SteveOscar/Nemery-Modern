@@ -67,11 +67,10 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.primary,
     borderRadius: 10,
-    marginBottom: height * 0.015,
-    height: height * 0.07,
+    marginBottom: 15,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
     // Modern shadow for iOS
     shadowColor: '#000',
     shadowOffset: {
@@ -84,14 +83,14 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   pressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.75,
+    transform: [{ scale: 0.9 }],
   },
   buttonText: {
-    fontSize: height * 0.045,
+    fontSize: 36,
     color: colors.white,
-    fontFamily: 'System',
     fontWeight: '600',
+    fontFamily: 'system'
   },
 });
 
