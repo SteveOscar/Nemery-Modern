@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
   infoBar: {
     width: '100%',
     marginBottom: 32,
+    marginTop: 75,
     paddingHorizontal: 20,
   },
   infoContainer: {

@@ -294,7 +294,7 @@ const GameScreen = () => {
       <QuitButton onPress={handleQuit} />
       {showTimerBar && (
         <View style={styles.timerBarContainer}>
-          <AppText style={styles.timerBarText}>{timerSeconds > 0 ? timerSeconds : ''}</AppText>
+          <AppText style={styles.timerBarText}>Game starts in: {timerSeconds > 0 ? timerSeconds : ''}</AppText>
           <Animated.View
             style={[
               styles.timerBar,
@@ -355,7 +355,8 @@ const styles = StyleSheet.create({
   },
   timerBarContainer: {
     position: 'absolute',
-    top: 200,
+    top: 250
+    ,
     left: 0,
     right: 0,
     alignItems: 'center',
