@@ -30,8 +30,8 @@ const { width, height } = Dimensions.get('window');
 
 const MenuScreen = () => {
   const navigation = useNavigation();
-  const { difficulty, changeDifficulty, startGame, soundEnabled, toggleSound } = useGame();
-  const { playSound, playRandomSound } = useSound();
+  const { difficulty, changeDifficulty, startGame } = useGame();
+  const { playSound, playRandomSound, soundEnabled, toggleSound } = useSound();
   const { username, isAuthenticated } = useUser();
   
   // Reanimated shared values
