@@ -4,7 +4,7 @@ import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
 
 // TODO: Replace with your actual API endpoint when backend is ready
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-api.com';
+const API_BASE_URL = 'http://YOUR_API_URL'; // Update this to your backend URL
 
 // Mock data for development
 const MOCK_USER = {
@@ -288,3 +288,38 @@ export const initializeApi = async () => {
 };
 
 export default apiService;
+
+export async function getUserByDevice(device) {
+  const response = await fetch(`${API_BASE_URL}/users/${device}`);
+  if (!response.ok) throw new Error('User not found');
+  return response.json();
+}
+
+export async function signupUser({ name, device }) {
+  const response = await fetch(`${API_BASE_URL}/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, device }),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.errors ? error.errors.join(', ') : 'Signup failed');
+  }
+  return response.json();
+}
+
+export async function getHighScores(device) {
+  const response = await fetch(`${API_BASE_URL}/scores/${device}`);
+  if (!response.ok) throw new Error('Failed to fetch high scores');
+  return response.json();
+}
+
+export async function submitScore(device, scoreData) {
+  const response = await fetch(`${API_BASE_URL}/scores/new/${device}/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(scoreData),
+  });
+  if (!response.ok) throw new Error('Failed to submit score');
+  return response.json();
+}
