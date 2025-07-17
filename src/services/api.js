@@ -1,34 +1,14 @@
 // src/services/api.js
-// TEMPORARY MOCK API SERVICE - Replace with real API calls when backend is ready
 import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
 
-// TODO: Replace with your actual API endpoint when backend is ready
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL
 const NEMERY_API_KEY = process.env.EXPO_PUBLIC_NEMERY_API_KEY
-
-// Mock data for development
-const MOCK_USER = {
-  id: 'mock-user-123',
-  name: 'Player',
-  device: 'mock-device',
-  token: 'mock-token-123',
-  createdAt: new Date().toISOString(),
-};
-
-const MOCK_HIGH_SCORES = [
-  { id: 1, name: 'Alice', score: 1500, difficulty: 'Hard', date: '2024-01-15' },
-  { id: 2, name: 'Bob', score: 1200, difficulty: 'Medium', date: '2024-01-14' },
-  { id: 3, name: 'Charlie', score: 900, difficulty: 'Easy', date: '2024-01-13' },
-  { id: 4, name: 'Diana', score: 800, difficulty: 'Medium', date: '2024-01-12' },
-  { id: 5, name: 'Eve', score: 700, difficulty: 'Easy', date: '2024-01-11' },
-];
 
 class ApiService {
   constructor() {
     this.deviceId = null;
     this.token = null;
-    this.isMockMode = false; // Use real API
   }
 
   async init() {
@@ -37,8 +17,6 @@ class ApiService {
     
     // Get saved auth token
     this.token = await SecureStore.getItemAsync('authToken');
-    
-    console.log('API Service initialized in MOCK MODE');
   }
 
   async request(endpoint, options = {}) {
@@ -62,6 +40,9 @@ class ApiService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
+      console.log('API response?????:', data);
+      console.log('attributes:', data['data']);
+
       return { success: true, data };
     } catch (error) {
       console.error('API request failed:', error);
@@ -82,10 +63,6 @@ class ApiService {
 
   // TODO: Implement real caching when API is ready
   async getCachedData(key) {
-    if (this.isMockMode) {
-      return null; // No caching in mock mode
-    }
-    
     try {
       const cached = await SecureStore.getItemAsync(`cache_${key}`);
       if (cached) {
@@ -104,10 +81,6 @@ class ApiService {
 
   // TODO: Implement real caching when API is ready
   async setCachedData(key, data) {
-    if (this.isMockMode) {
-      return; // No caching in mock mode
-    }
-    
     try {
       const cacheData = {
         data,
@@ -191,11 +164,6 @@ class ApiService {
 
   // TODO: Implement real score queuing when API is ready
   async queueScoreSubmission(score) {
-    if (this.isMockMode) {
-      console.log('Mock score queued:', score);
-      return;
-    }
-    
     try {
       const queuedScores = await SecureStore.getItemAsync('queuedScores');
       const scores = queuedScores ? JSON.parse(queuedScores) : [];
@@ -208,11 +176,6 @@ class ApiService {
 
   // TODO: Implement real score syncing when API is ready
   async syncQueuedScores() {
-    if (this.isMockMode) {
-      console.log('Mock score sync completed');
-      return;
-    }
-    
     try {
       const queuedScores = await SecureStore.getItemAsync('queuedScores');
       if (!queuedScores) return;
@@ -257,15 +220,26 @@ export const initializeApi = async () => {
 export default apiService;
 
 export async function getUserByDevice(device) {
-  const response = await fetch(`${API_BASE_URL}/users/${device}`);
-  if (!response.ok) throw new Error('User not found');
+  const response = await fetch(`${API_BASE_URL}/users/${device}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Nemery-Api-Key': NEMERY_API_KEY,
+      'X-Device-ID': device,
+    },
+  });
+  // if (response.status === 404) return null;
+  if (!response.ok) throw new Error('User fetch failed');
   return response.json();
 }
 
 export async function signupUser({ name, device }) {
   const response = await fetch(`${API_BASE_URL}/users`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Nemery-Api-Key': NEMERY_API_KEY,
+      'X-Device-ID': device,
+    },
     body: JSON.stringify({ name, device }),
   });
   if (!response.ok) {

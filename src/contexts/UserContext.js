@@ -37,12 +37,19 @@ export const UserProvider = ({ children }) => {
 
       // Check for saved user
       const savedUser = await SecureStore.getItemAsync('user');
-      
+      console.log('savedUser: ', savedUser)
       if (savedUser) {
-        const userData = JSON.parse(savedUser);
+        let userData = JSON.parse(savedUser);
+        // Normalize if nested structure (from old or direct API save)
+        if (userData.attributes) {
+          userData = {
+            ...userData.attributes,
+            id: userData.id,
+          };
+        }
         setUser(userData);
         setIsAuthenticated(true);
-        setMessage(`Welcome back ${userData.name}!`);
+        setMessage(`Welcome back ${userData.name || ''}!`);
         
         // Verify user still exists on server
         const result = await apiService.checkUser();
@@ -56,10 +63,17 @@ export const UserProvider = ({ children }) => {
         const result = await apiService.checkUser();
         
         if (result.success && result.data) {
-          setUser(result.data);
+          // Parse nested structure
+          const apiUser = result.data.data?.attributes ? {
+            ...result.data.data.attributes,
+            id: result.data.data.id,
+          } : result.data;
+          console.log('apiUser1:', apiUser);
+          setUser(apiUser);
           setIsAuthenticated(true);
-          setMessage(`Welcome back ${result.data.name}!`);
-          await SecureStore.setItemAsync('user', JSON.stringify(result.data));
+          setMessage(`Welcome back ${apiUser.name || ''}!`);
+          // FLATTENED OBJECT IS apiUser, so save it:
+          await SecureStore.setItemAsync('user', JSON.stringify(apiUser));
         }
       }
     } catch (err) {
@@ -95,16 +109,27 @@ export const UserProvider = ({ children }) => {
       const deviceId = Device.osBuildId || Device.modelId || Device.osInternalBuildId || Device.deviceName || 'unknown';
       let userData;
       try {
-        userData = await getUserByDevice(deviceId);
-        // Optionally update username if changed (not implemented here)
-        setMessage(`Welcome back ${userData.name}!`);
+        const apiUser = await getUserByDevice(deviceId);
+        // Parse nested structure
+        userData = apiUser.data?.attributes ? {
+          ...apiUser.data.attributes,
+          id: apiUser.data.id,
+        } : apiUser;
+        console.log('apiUser2:', apiUser);
+
+        setMessage(`Welcome back ${userData.name || ''}!`);
       } catch (e) {
         // Not found, sign up
-        userData = await signupUser({ name: username.trim(), device: deviceId });
+        const apiUser = await signupUser({ name: username.trim(), device: deviceId });
+        userData = apiUser.data?.attributes ? {
+          ...apiUser.data.attributes,
+          id: apiUser.data.id,
+        } : apiUser;
         setMessage('Welcome, new player!');
       }
       setUser(userData);
       setIsAuthenticated(true);
+      // FLATTENED OBJECT IS userData, so save it:
       await SecureStore.setItemAsync('user', JSON.stringify(userData));
       return true;
     } catch (err) {
@@ -156,7 +181,7 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   const isGuest = useCallback(() => {
-    return !user || user.name === 'Anonymous';
+    return !user;
   }, [user]);
 
   const value = {
@@ -176,7 +201,7 @@ export const UserProvider = ({ children }) => {
     isGuest,
     
     // Computed values
-    username: user?.name || 'Guest',
+    username: user?.name || '',
     userId: user?.id || null,
     deviceId: user?.device || Device.osBuildId || 'unknown',
   };
