@@ -15,6 +15,7 @@ import Overlay from '../components/Overlay';
 import InfoBar from '../components/InfoBar';
 import QuitButton from '../components/QuitButton';
 import AppText from '../components/AppText';
+import { colors } from '../constants/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -281,13 +282,13 @@ const GameScreen = () => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#667eea', '#764ba2', '#f093fb', '#f5576c']}
+        colors={[colors.background, colors.gameBoard, colors.primaryDark, colors.primary]}
         style={styles.backgroundGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+        colors={[colors.overlay, colors.overlayLight]}
         style={styles.overlayGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -367,17 +368,20 @@ const styles = StyleSheet.create({
   timerBar: {
     height: 10,
     borderRadius: 6,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
+    backgroundColor: colors.primary,
+    shadowColor: colors.glow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.7,
+    shadowRadius: 8,
+    elevation: 6,
   },
   timerBarText: {
     fontSize: 16,
-    color: '#fff',
+    color: colors.text,
     fontFamily: 'Poppins-Regular',
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
 });
 

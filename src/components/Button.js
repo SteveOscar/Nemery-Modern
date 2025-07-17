@@ -74,24 +74,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     // Modern shadow for iOS
-    shadowColor: '#000',
+    shadowColor: colors.glow,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.7,
+    shadowRadius: 8,
     // Modern shadow for Android
-    elevation: 5,
+    elevation: 10,
+    borderWidth: 2,
+    borderColor: colors.accentGlow,
   },
   pressed: {
-    opacity: 0.75,
-    transform: [{ scale: 0.9 }],
+    opacity: 0.85,
+    transform: [{ scale: 0.96 }],
+    backgroundColor: colors.primaryDark,
+    shadowColor: colors.accentGlow,
+    shadowOpacity: 1,
+    shadowRadius: 12,
   },
   buttonText: {
     fontSize: 36,
-    color: colors.white,
+    color: colors.text,
     fontWeight: '600',
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
 });
 

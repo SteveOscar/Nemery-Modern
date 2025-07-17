@@ -10,6 +10,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import Button from '../components/Button';
 import AppText from '../components/AppText';
+import { colors } from '../constants/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,13 +18,13 @@ const HelpScreen = ({ onBack }) => {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={['#667eea', '#764ba2', '#f093fb', '#f5576c']}
+        colors={[colors.background, colors.gameBoard, colors.primaryDark, colors.primary]}
         style={styles.backgroundGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+        colors={[colors.overlay, colors.overlayLight]}
         style={styles.overlayGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -171,10 +172,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    color: colors.primary,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   placeholder: {
     width: 80,

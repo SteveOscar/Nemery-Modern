@@ -3,11 +3,12 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AppText from './AppText';
+import { colors } from '../constants/colors';
 
 const InfoBar = ({ score, level }) => (
   <View style={styles.infoBar}>
     <LinearGradient
-      colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+      colors={[colors.overlay, colors.overlayLight]}
       style={styles.infoContainer}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -39,39 +40,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingVertical: 20,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    shadowColor: '#000',
+    borderWidth: 2,
+    borderColor: colors.primary,
+    shadowColor: colors.glow,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.7,
     shadowRadius: 16,
-    elevation: 8,
+    elevation: 12,
+    backgroundColor: colors.surface,
   },
   infoItem: {
     alignItems: 'center',
     flex: 1,
   },
   infoLabel: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: colors.primary,
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 1,
     marginBottom: 4,
     fontFamily: 'System',
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   infoValue: {
-    color: '#ffffff',
+    color: colors.text,
     fontSize: 28,
     fontWeight: '700',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
     fontFamily: 'System',
   },
   divider: {
     width: 1,
     height: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: colors.primary,
     marginHorizontal: 20,
   },
 });

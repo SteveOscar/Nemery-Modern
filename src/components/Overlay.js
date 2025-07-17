@@ -3,13 +3,14 @@ import React from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AppText from './AppText';
+import { colors } from '../constants/colors';
 
 const Overlay = ({ visible, message, type, anim }) => {
   if (!visible) return null;
   
   const gradientColors = type === 'success' 
-    ? ['rgba(76, 175, 80, 0.9)', 'rgba(129, 199, 132, 0.9)']
-    : ['rgba(244, 67, 54, 0.9)', 'rgba(239, 83, 80, 0.9)'];
+    ? [colors.primary, colors.accentGlow, colors.glow]
+    : [colors.error, '#FF6B6B'];
     
   return (
     <Animated.View
@@ -48,9 +49,9 @@ const styles = StyleSheet.create({
     right: '10%',
     zIndex: 20,
     borderRadius: 24,
-    shadowColor: '#000',
+    shadowColor: colors.glow,
     shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.8,
     shadowRadius: 24,
     elevation: 12,
     overflow: 'hidden',
@@ -60,18 +61,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderWidth: 2,
+    borderColor: colors.primary,
   },
   overlayText: {
-    color: '#ffffff',
+    color: colors.text,
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
     letterSpacing: 1,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
     fontFamily: 'System',
   },
 });

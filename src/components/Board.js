@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FlippableTile from './FlippableTile';
 import { CELL_SIZE, CELL_PADDING } from '../constants/game';
 import AppText from './AppText';
+import { colors } from '../constants/colors';
 
 const TILE_SPACING = 10;
 
@@ -51,7 +52,7 @@ const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={['#667eea', '#764ba2']}
+                colors={[colors.primaryDark, colors.primary, colors.accentGlow]}
                 style={styles.tileGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -67,7 +68,7 @@ const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={['#f093fb', '#f5576c']}
+                colors={[colors.background, colors.primaryDark]}
                 style={styles.tileGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -86,7 +87,7 @@ const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
   return (
     <View style={[styles.container, { width: boardWidth, height: boardHeight }]}>
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+        colors={[colors.overlay, colors.overlayLight]}
         style={styles.boardBackground}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -110,18 +111,18 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 2,
+    borderColor: colors.primary,
   },
   tileContainer: {
     width: CELL_SIZE,
     height: CELL_SIZE,
     borderRadius: 16,
-    shadowColor: '#000',
+    shadowColor: colors.glow,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.7,
     shadowRadius: 16,
-    elevation: 8,
+    elevation: 12,
   },
   tileButton: {
     flex: 1,
@@ -133,24 +134,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderWidth: 2,
+    borderColor: colors.primary,
   },
   tileNumber: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    color: colors.text,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   tileQuestion: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#ffffff',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    color: colors.primary,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
 });
 

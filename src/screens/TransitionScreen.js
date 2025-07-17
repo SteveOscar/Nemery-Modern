@@ -91,9 +91,12 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 18,
-    color: colors.text,
+    color: colors.primary,
     marginTop: 16,
     textAlign: 'center',
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
 });
 

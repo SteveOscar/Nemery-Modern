@@ -118,24 +118,24 @@ const MenuScreen = () => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#667eea', '#764ba2', '#f093fb', '#f5576c']}
+        colors={[colors.background, colors.gameBoard, colors.primaryDark, colors.primary]}
         style={styles.backgroundGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255,255, 0.05)']}
+        colors={[colors.overlay, colors.overlayLight]}
         style={styles.overlayGradient}
-        start={{ x: 0, y:0 }}
-        end={{ x: 1, y:1 }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       />
       
       <View style={styles.iconContainer}>
         <LinearGradient
-          colors={['rgba(255, 255,0.2)', 'rgba(255,255,255,0.1)']}
+          colors={[colors.surface, colors.background]}
           style={styles.iconWrapper}
-          start={{ x:0, y:0 }}
-          end={{ x:1, y:1 }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
           <Image
             source={require('../../assets/images/icon_logo.png')}
@@ -192,12 +192,12 @@ const MenuScreen = () => {
       </View>
 
       <LinearGradient
-        colors={['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+        colors={[colors.overlay, colors.overlayLight]}
         style={styles.welcomeContainer}
-        start={{ x:0, y:0 }}
-        end={{ x:1, y:1 }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
-        <AppText style={styles.welcomeText} allowFontScaling={false}>
+        <AppText style={[styles.welcomeText, { color: colors.text, textShadowColor: colors.glow }]} allowFontScaling={false}>
           Welcome, {username}!
         </AppText>
       </LinearGradient>
@@ -237,13 +237,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    shadowColor: '#000',
+    borderWidth: 2,
+    borderColor: colors.primary,
+    shadowColor: colors.glow,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.7,
     shadowRadius: 16,
-    elevation: 8,
+    elevation: 12,
+    backgroundColor: colors.surface,
   },
   icon: {
     width: width * 0.2,
@@ -263,22 +264,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    shadowColor: '#000',
+    borderWidth: 2,
+    borderColor: colors.primary,
+    shadowColor: colors.glow,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.7,
     shadowRadius: 16,
-    elevation: 8,
+    elevation: 12,
+    backgroundColor: colors.surface,
   },
   welcomeText: {
     fontSize: 18,
-    color: '#ffffff',
+    color: colors.text,
     fontFamily: 'System',
     fontWeight: '600',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
 });
 

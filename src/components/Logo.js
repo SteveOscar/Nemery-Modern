@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import AppText from './AppText';
+import { colors } from '../constants/colors';
 
 const Logo = ({ size = 'medium', showText = true, style }) => {
   const getSize = () => {
@@ -51,9 +52,12 @@ const styles = StyleSheet.create({
   },
   text: {
     fontWeight: 'bold',
-    color: 'white',
+    color: colors.primary,
     textAlign: 'center',
     marginBottom: 30,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   },
 });
 
