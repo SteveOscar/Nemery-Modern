@@ -24,22 +24,22 @@ export const GameProvider = ({ children }) => {
 
   const difficultyConfig = {
     Easy: { 
-      gridSize: [3, 2], 
+      gridSize: [2, 2], 
       maxNumber: (level) => Math.min(6 * level, 99),
       pointsPerTile: 1,
       timeMultiplier: 1.5,
       bonusMultiplier: 1.3,
     },
     Medium: { 
-      gridSize: [3, 3], 
-      maxNumber: 9,
+      gridSize: [3, 2], 
+      maxNumber: (level) => Math.min(8 * level, 99),
       pointsPerTile: 2,
       timeMultiplier: 2,
       bonusMultiplier: 2,
     },
     Hard: { 
-      gridSize: [4, 3], 
-      maxNumber: 12,
+      gridSize: [3, 3], 
+      maxNumber: (level) => Math.min(10 * level, 99),
       pointsPerTile: 3,
       timeMultiplier: 3,
       bonusMultiplier: 3,

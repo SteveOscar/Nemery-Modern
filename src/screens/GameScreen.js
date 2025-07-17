@@ -98,6 +98,7 @@ const GameScreen = () => {
   const hideAllNumbers = useCallback(() => {
     setTileFlipped(Array(totalTiles).fill(true));
     setNumbers(Array(totalTiles).fill(''));
+    setShowTimerBar(false)
   }, [totalTiles]);
 
   // Show/hide tiles with memorization delay
@@ -126,7 +127,7 @@ const GameScreen = () => {
             toValue: 0,
             duration,
             useNativeDriver: false,
-          }).start(() => setShowTimerBar(false));
+          }).start();
           setTimeout(() => {
             hideAllNumbers();
             setInPlay(true);
