@@ -124,18 +124,18 @@ const MenuScreen = () => {
         end={{ x: 1, y: 1 }}
       />
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255,255, 0.05)']}
         style={styles.overlayGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        start={{ x: 0, y:0 }}
+        end={{ x: 1, y:1 }}
       />
       
       <View style={styles.iconContainer}>
         <LinearGradient
-          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+          colors={['rgba(255, 255,0.2)', 'rgba(255,255,255,0.1)']}
           style={styles.iconWrapper}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          start={{ x:0, y:0 }}
+          end={{ x:1, y:1 }}
         >
           <Image
             source={require('../../assets/images/icon_logo.png')}
@@ -192,10 +192,10 @@ const MenuScreen = () => {
       </View>
 
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+        colors={['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
         style={styles.welcomeContainer}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        start={{ x:0, y:0 }}
+        end={{ x:1, y:1 }}
       >
         <AppText style={styles.welcomeText} allowFontScaling={false}>
           Welcome, {username}!

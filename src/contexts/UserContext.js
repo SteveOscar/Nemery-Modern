@@ -15,6 +15,28 @@ export const useUser = () => {
   return context;
 };
 
+const getDeviceId = () => {
+  return Device.osBuildId || Device.modelId || Device.osInternalBuildId || Device.deviceName || 'unknown';
+};
+
+const normalizeUser = (rawData) => {
+  if (!rawData) return null;
+
+  let userData = rawData;
+  // Handle potential nesting from API responses
+  if (rawData.data) userData = rawData.data;
+  if (userData.data) userData = userData.data; // For double-nested cases
+
+  if (userData.attributes) {
+    return {
+      ...userData.attributes,
+      id: userData.id,
+    };
+  }
+
+  return userData;
+};
+
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,49 +57,35 @@ export const UserProvider = ({ children }) => {
       // Initialize API service
       await apiService.init();
 
-      // Check for saved user
-      const savedUser = await SecureStore.getItemAsync('user');
-      console.log('savedUser: ', savedUser)
-      if (savedUser) {
-        let userData = JSON.parse(savedUser);
-        // Normalize if nested structure (from old or direct API save)
-        if (userData.attributes) {
-          userData = {
-            ...userData.attributes,
-            id: userData.id,
-          };
-        }
-        setUser(userData);
-        setIsAuthenticated(true);
-        setMessage(`Welcome back ${userData.name || ''}!`);
-        
-        // Verify user still exists on server
-        const result = await apiService.checkUser();
-        if (!result.success) {
-          // User no longer exists on server, clear local data
-          await logout();
-        }
-      } else {
-        // Check if device has existing user
-        const deviceId = Device.osBuildId || Device.modelId || 'unknown';
-        const result = await apiService.checkUser();
-        
-        if (result.success && result.data) {
-          // Parse nested structure
-          const apiUser = result.data.data?.attributes ? {
-            ...result.data.data.attributes,
-            id: result.data.data.id,
-          } : result.data;
-          console.log('apiUser1:', apiUser);
-          setUser(apiUser);
-          setIsAuthenticated(true);
-          setMessage(`Welcome back ${apiUser.name || ''}!`);
-          // FLATTENED OBJECT IS apiUser, so save it:
-          await SecureStore.setItemAsync('user', JSON.stringify(apiUser));
-        }
+      const deviceId = getDeviceId();
+      const savedUserJson = await SecureStore.getItemAsync('user');
+      let userData;
+
+      if (savedUserJson) {
+        const parsed = JSON.parse(savedUserJson);
+        userData = normalizeUser(parsed);
       }
+
+      // Always attempt to fetch/verify from server using device ID
+      const apiResponse = await getUserByDevice(deviceId);
+      userData = normalizeUser(apiResponse);
+
+      // If we reach here, user exists on server
+      setUser(userData);
+      setIsAuthenticated(true);
+      setMessage(`Welcome back ${userData.name || ''}!`);
+
+      // Save normalized user
+      await SecureStore.setItemAsync('user', JSON.stringify(userData));
     } catch (err) {
+      // If error (e.g., user not found), clear any local data if it existed
+      if (await SecureStore.getItemAsync('user')) {
+        await SecureStore.deleteItemAsync('user');
+      }
+      setUser(null);
+      setIsAuthenticated(false);
       console.error('Error initializing user:', err);
+      // Only set error if it's not a "not found" case (assuming API throws specific error for not found)
       setError('Failed to initialize user');
     } finally {
       setIsLoading(false);
@@ -105,34 +113,25 @@ export const UserProvider = ({ children }) => {
         return false;
       }
 
-      // Get device ID
-      const deviceId = Device.osBuildId || Device.modelId || Device.osInternalBuildId || Device.deviceName || 'unknown';
+      const deviceId = getDeviceId();
       let userData;
       try {
-        const apiUser = await getUserByDevice(deviceId);
-        // Parse nested structure
-        userData = apiUser.data?.attributes ? {
-          ...apiUser.data.attributes,
-          id: apiUser.data.id,
-        } : apiUser;
-        console.log('apiUser2:', apiUser);
-
+        const apiResponse = await getUserByDevice(deviceId);
+        userData = normalizeUser(apiResponse);
         setMessage(`Welcome back ${userData.name || ''}!`);
       } catch (e) {
         // Not found, sign up
-        const apiUser = await signupUser({ name: username.trim(), device: deviceId });
-        userData = apiUser.data?.attributes ? {
-          ...apiUser.data.attributes,
-          id: apiUser.data.id,
-        } : apiUser;
+        const signupResponse = await signupUser({ name: username.trim(), device: deviceId });
+        userData = normalizeUser(signupResponse);
         setMessage('Welcome, new player!');
       }
+
       setUser(userData);
       setIsAuthenticated(true);
-      // FLATTENED OBJECT IS userData, so save it:
       await SecureStore.setItemAsync('user', JSON.stringify(userData));
       return true;
     } catch (err) {
+      console.error('Login error:', err);
       setError('Login failed. Please try again.');
       return false;
     } finally {
@@ -143,12 +142,12 @@ export const UserProvider = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       setIsLoading(true);
-      
+
       // Clear all stored data
       await SecureStore.deleteItemAsync('user');
       await SecureStore.deleteItemAsync('authToken');
       await SecureStore.deleteItemAsync('highScores');
-      
+
       setUser(null);
       setIsAuthenticated(false);
       setMessage('');
@@ -191,7 +190,7 @@ export const UserProvider = ({ children }) => {
     isAuthenticated,
     error,
     message,
-    
+
     // Actions
     login,
     logout,
@@ -199,11 +198,11 @@ export const UserProvider = ({ children }) => {
     clearError,
     clearMessage,
     isGuest,
-    
+
     // Computed values
     username: user?.name || '',
     userId: user?.id || null,
-    deviceId: user?.device || Device.osBuildId || 'unknown',
+    deviceId: user?.device || getDeviceId(),
   };
 
   return (
