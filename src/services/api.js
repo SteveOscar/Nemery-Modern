@@ -4,7 +4,8 @@ import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
 
 // TODO: Replace with your actual API endpoint when backend is ready
-const API_BASE_URL = 'http://YOUR_API_URL'; // Update this to your backend URL
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL
+const NEMERY_API_KEY = process.env.EXPO_PUBLIC_NEMERY_API_KEY
 
 // Mock data for development
 const MOCK_USER = {
@@ -27,7 +28,7 @@ class ApiService {
   constructor() {
     this.deviceId = null;
     this.token = null;
-    this.isMockMode = true; // TODO: Set to false when API is ready
+    this.isMockMode = false; // Use real API
   }
 
   async init() {
@@ -40,62 +41,30 @@ class ApiService {
     console.log('API Service initialized in MOCK MODE');
   }
 
-  // TODO: Replace this method with real API calls when backend is ready
   async request(endpoint, options = {}) {
-    if (this.isMockMode) {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Return mock responses based on endpoint
-      if (endpoint === '/users' && options.method === 'POST') {
-        return { success: true, data: MOCK_USER };
-      }
-      
-      if (endpoint.startsWith('/users/')) {
-        return { success: true, data: MOCK_USER };
-      }
-      
-      if (endpoint.startsWith('/scores/') && !endpoint.includes('/new/')) {
-        return { success: true, data: MOCK_HIGH_SCORES };
-      }
-      
-      if (endpoint.includes('/scores/new/')) {
-        return { success: true, data: { message: 'Score submitted successfully' } };
-      }
-      
-      return { success: true, data: {} };
-    }
-    
-    // TODO: Uncomment this section when API is ready
-    /*
     const url = `${API_BASE_URL}${endpoint}`;
-    
     const config = {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        'Nemery-Api-Key': NEMERY_API_KEY,
         'X-Device-ID': this.deviceId,
-        ...options.headers,
+        ...(options.headers || {}),
       },
     };
-
     if (this.token) {
       config.headers['Authorization'] = `Bearer ${this.token}`;
     }
-
     try {
+      console.log('API request!!!!!:', url, config);
       const response = await fetch(url, config);
-      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
       const data = await response.json();
       return { success: true, data };
-      
     } catch (error) {
       console.error('API request failed:', error);
-      
       // Check if we have cached data for this request
       if (options.cacheKey) {
         const cachedData = await this.getCachedData(options.cacheKey);
@@ -103,14 +72,12 @@ class ApiService {
           return { success: true, data: cachedData, fromCache: true };
         }
       }
-      
       return { 
         success: false, 
         error: error.message,
-        isNetworkError: !navigator.onLine,
+        isNetworkError: typeof navigator !== 'undefined' ? !navigator.onLine : false,
       };
     }
-    */
   }
 
   // TODO: Implement real caching when API is ready
