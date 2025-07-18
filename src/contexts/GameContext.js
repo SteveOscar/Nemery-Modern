@@ -69,10 +69,40 @@ export const GameProvider = ({ children }) => {
     }
   };
 
+  const normalizeHighScores = (apiData, username = null) => {
+    // Handle API response shape: { data: { high_scores: [...], user_score: ... } }
+    let highScoresArr = [];
+    let userScore = 0;
+    if (apiData && apiData.data) {
+      if (Array.isArray(apiData.data.high_scores)) {
+        highScoresArr = apiData.data.high_scores.map(entry => [entry.name || 'Anonymous', entry.score || 0]);
+      }
+      if (typeof apiData.data.user_score === 'number') {
+        userScore = apiData.data.user_score;
+      }
+    } else if (Array.isArray(apiData)) {
+      highScoresArr = apiData.map(entry => [entry.name || 'Anonymous', entry.score || 0]);
+      if (username) {
+        const userEntry = apiData.find(entry => entry.name === username);
+        if (userEntry) userScore = userEntry.score;
+      } else if (apiData.length > 0) {
+        userScore = Math.max(...apiData.map(entry => entry.score || 0));
+      }
+    }
+    return { highScores: highScoresArr, userScore };
+  };
+
   const saveHighScores = useCallback(async (scores) => {
     try {
-      await SecureStore.setItemAsync('highScores', JSON.stringify(scores));
-      setHighScores(scores);
+      // Try to get username from SecureStore
+      let username = null;
+      try {
+        const user = await SecureStore.getItemAsync('user');
+        if (user) username = JSON.parse(user).name;
+      } catch {}
+      const normalized = normalizeHighScores(scores, username);
+      await SecureStore.setItemAsync('highScores', JSON.stringify(normalized));
+      setHighScores(normalized);
     } catch (error) {
       console.error('Error saving high scores:', error);
     }
