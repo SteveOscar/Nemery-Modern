@@ -1,6 +1,7 @@
 // src/contexts/GameContext.js
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import apiService from '../services/api';
 
 const GameContext = createContext({});
 
@@ -92,6 +93,12 @@ export const GameProvider = ({ children }) => {
 
   const endGame = useCallback(async (finalScore) => {
     setIsPlaying(false);
+    // Submit score to API
+    try {
+      await apiService.submitScore(finalScore);
+    } catch (err) {
+      console.error('Failed to submit score to API:', err);
+    }
     const updatedHighScores = { ...highScores };
     if (finalScore > updatedHighScores.userScore) {
       updatedHighScores.userScore = finalScore;

@@ -139,12 +139,9 @@ class ApiService {
   async submitScore(score) {
     const user = await SecureStore.getItemAsync('user');
     const userId = user ? JSON.parse(user).id : null;
-    
     if (!userId) {
       return { success: false, error: 'No user logged in' };
     }
-
-    console.log('Mock score submission:', score);
 
     const result = await this.request(`/scores/new/${this.deviceId}`, {
       method: 'POST',
