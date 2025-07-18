@@ -9,7 +9,7 @@ const Overlay = ({ visible, message, type, anim }) => {
   if (!visible) return null;
   
   const gradientColors = type === 'success' 
-    ? [colors.primary, colors.accentGlow, colors.glow]
+    ? ['white', colors.accentGlow, colors.glow]
     : [colors.error, '#FF6B6B'];
     
   return (
@@ -44,13 +44,13 @@ const Overlay = ({ visible, message, type, anim }) => {
 const styles = StyleSheet.create({
   overlay: {
     position: 'absolute',
-    top: '40%',
-    left: '10%',
-    right: '10%',
+    top: '30%',
+    left: '15%',
+    right: '15%',
     zIndex: 20,
     borderRadius: 24,
     shadowColor: colors.glow,
-    shadowOffset: { width: 0, height: 16 },
+    shadowOffset: { width: 2, height: 16 },
     shadowOpacity: 0.8,
     shadowRadius: 24,
     elevation: 12,
@@ -61,11 +61,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 24,
-    borderWidth: 2,
-    borderColor: colors.primary,
   },
   overlayText: {
-    color: colors.text,
+    color: 'black',
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
