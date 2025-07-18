@@ -2,101 +2,107 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class StorageService {
   // Generic storage methods
-  async setItem(key, value) {
+  static async setItem(key, value) {
     try {
       const jsonValue = JSON.stringify(value);
       await AsyncStorage.setItem(key, jsonValue);
       return true;
     } catch (error) {
-      console.error('Error saving to storage:', error);
+      // eslint-disable-next-line no-console
+      if (process.env.NODE_ENV === 'development') console.warn('Error saving to storage:', error);
       return false;
     }
   }
 
-  async getItem(key, defaultValue = null) {
+  static async getItem(key, defaultValue = null) {
     try {
       const jsonValue = await AsyncStorage.getItem(key);
       return jsonValue != null ? JSON.parse(jsonValue) : defaultValue;
     } catch (error) {
-      console.error('Error reading from storage:', error);
+      // eslint-disable-next-line no-console
+      if (process.env.NODE_ENV === 'development')
+        console.warn('Error reading from storage:', error);
       return defaultValue;
     }
   }
 
-  async removeItem(key) {
+  static async removeItem(key) {
     try {
       await AsyncStorage.removeItem(key);
       return true;
     } catch (error) {
-      console.error('Error removing from storage:', error);
+      // eslint-disable-next-line no-console
+      if (process.env.NODE_ENV === 'development')
+        console.warn('Error removing from storage:', error);
       return false;
     }
   }
 
-  async clear() {
+  static async clear() {
     try {
       await AsyncStorage.clear();
       return true;
     } catch (error) {
-      console.error('Error clearing storage:', error);
+      // eslint-disable-next-line no-console
+      if (process.env.NODE_ENV === 'development') console.warn('Error clearing storage:', error);
       return false;
     }
   }
 
   // User authentication
-  async saveUserToken(token) {
-    return await this.setItem(StorageService.KEYS.USER_TOKEN, token);
+  static async saveUserToken(token) {
+    return StorageService.setItem(StorageService.KEYS.USER_TOKEN, token);
   }
 
-  async getUserToken() {
-    return await this.getItem(StorageService.KEYS.USER_TOKEN);
+  static async getUserToken() {
+    return StorageService.getItem(StorageService.KEYS.USER_TOKEN);
   }
 
-  async removeUserToken() {
-    return await this.removeItem(StorageService.KEYS.USER_TOKEN);
+  static async removeUserToken() {
+    return StorageService.removeItem(StorageService.KEYS.USER_TOKEN);
   }
 
-  async saveUserProfile(profile) {
-    return await this.setItem(StorageService.KEYS.USER_PROFILE, profile);
+  static async saveUserProfile(profile) {
+    return StorageService.setItem(StorageService.KEYS.USER_PROFILE, profile);
   }
 
-  async getUserProfile() {
-    return await this.getItem(StorageService.KEYS.USER_PROFILE);
+  static async getUserProfile() {
+    return StorageService.getItem(StorageService.KEYS.USER_PROFILE);
   }
 
   // Game state
-  async saveGameState(gameState) {
-    return await this.setItem(StorageService.KEYS.GAME_STATE, gameState);
+  static async saveGameState(gameState) {
+    return StorageService.setItem(StorageService.KEYS.GAME_STATE, gameState);
   }
 
-  async getGameState() {
-    return await this.getItem(StorageService.KEYS.GAME_STATE);
+  static async getGameState() {
+    return StorageService.getItem(StorageService.KEYS.GAME_STATE);
   }
 
-  async clearGameState() {
-    return await this.removeItem(StorageService.KEYS.GAME_STATE);
+  static async clearGameState() {
+    return StorageService.removeItem(StorageService.KEYS.GAME_STATE);
   }
 
   // Scores
   async saveBestScore(score) {
-    const currentBest = await this.getBestScore();
+    const currentBest = await StorageService.getBestScore();
     if (score > currentBest) {
-      return await this.setItem(StorageService.KEYS.BEST_SCORE, score);
+      return StorageService.setItem(StorageService.KEYS.BEST_SCORE, score);
     }
     return false;
   }
 
-  async getBestScore() {
-    return await this.getItem(StorageService.KEYS.BEST_SCORE, 0);
+  static async getBestScore() {
+    return StorageService.getItem(StorageService.KEYS.BEST_SCORE, 0);
   }
 
   // Statistics
-  async saveGameStatistics(statistics) {
-    return await this.setItem(StorageService.KEYS.GAME_STATISTICS, statistics);
+  static async saveGameStatistics(statistics) {
+    return StorageService.setItem(StorageService.KEYS.GAME_STATISTICS, statistics);
   }
 
-  async getGameStatistics() {
-    return await this.getItem(StorageService.KEYS.GAME_STATISTICS, {
+  static async getGameStatistics() {
+    return StorageService.getItem(StorageService.KEYS.GAME_STATISTICS, {
       gamesPlayed: 0,
       totalScore: 0,
       averageScore: 0,
@@ -106,7 +112,7 @@ class StorageService {
   }
 
   async updateGameStatistics(gameResult) {
-    const currentStats = await this.getGameStatistics();
+    const currentStats = await StorageService.getGameStatistics();
     const newStats = {
       gamesPlayed: currentStats.gamesPlayed + 1,
       totalScore: currentStats.totalScore + gameResult.score,
@@ -116,16 +122,16 @@ class StorageService {
       highestTile: Math.max(currentStats.highestTile, gameResult.highestTile),
       totalMoves: currentStats.totalMoves + gameResult.moves,
     };
-    return await this.saveGameStatistics(newStats);
+    return this.saveGameStatistics(newStats);
   }
 
   // Settings
-  async saveSettings(settings) {
-    return await this.setItem(StorageService.KEYS.SETTINGS, settings);
+  static async saveSettings(settings) {
+    return StorageService.setItem(StorageService.KEYS.SETTINGS, settings);
   }
 
-  async getSettings() {
-    return await this.getItem(StorageService.KEYS.SETTINGS, {
+  static async getSettings() {
+    return StorageService.getItem(StorageService.KEYS.SETTINGS, {
       soundEnabled: true,
       vibrationEnabled: true,
       theme: 'light',
@@ -134,45 +140,45 @@ class StorageService {
   }
 
   async updateSetting(key, value) {
-    const settings = await this.getSettings();
+    const settings = await StorageService.getSettings();
     settings[key] = value;
-    return await this.saveSettings(settings);
+    return this.saveSettings(settings);
   }
 
   // Sound settings
-  async setSoundEnabled(enabled) {
-    return await this.setItem(StorageService.KEYS.SOUND_ENABLED, enabled);
+  static async setSoundEnabled(enabled) {
+    return StorageService.setItem(StorageService.KEYS.SOUND_ENABLED, enabled);
   }
 
-  async isSoundEnabled() {
-    return await this.getItem(StorageService.KEYS.SOUND_ENABLED, true);
+  static async isSoundEnabled() {
+    return StorageService.getItem(StorageService.KEYS.SOUND_ENABLED, true);
   }
 
   // Vibration settings
-  async setVibrationEnabled(enabled) {
-    return await this.setItem(StorageService.KEYS.VIBRATION_ENABLED, enabled);
+  static async setVibrationEnabled(enabled) {
+    return StorageService.setItem(StorageService.KEYS.VIBRATION_ENABLED, enabled);
   }
 
-  async isVibrationEnabled() {
-    return await this.getItem(StorageService.KEYS.VIBRATION_ENABLED, true);
+  static async isVibrationEnabled() {
+    return StorageService.getItem(StorageService.KEYS.VIBRATION_ENABLED, true);
   }
 
   // Utility methods
-  async isFirstLaunch() {
-    const hasLaunched = await this.getItem('has_launched');
+  static async isFirstLaunch() {
+    const hasLaunched = await StorageService.getItem('has_launched');
     if (!hasLaunched) {
-      await this.setItem('has_launched', true);
+      await StorageService.setItem('has_launched', true);
       return true;
     }
     return false;
   }
 
-  async getAppVersion() {
-    return await this.getItem('app_version');
+  static async getAppVersion() {
+    return StorageService.getItem('app_version');
   }
 
-  async setAppVersion(version) {
-    return await this.setItem('app_version', version);
+  static async setAppVersion(version) {
+    return StorageService.setItem('app_version', version);
   }
 }
 

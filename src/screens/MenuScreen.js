@@ -138,7 +138,7 @@ const MenuScreen = () => {
         end={{ x: 1, y: 1 }}
       />
 
-      <View style={styles.iconContainer}>
+      {/* <View style={styles.iconContainer}>
         <LinearGradient
           colors={[colors.surface, colors.background]}
           style={styles.iconWrapper}
@@ -151,7 +151,7 @@ const MenuScreen = () => {
             resizeMode="contain"
           />
         </LinearGradient>
-      </View>
+      </View> */}
 
       <View style={styles.menuContainer}>
         <Animated.View style={fadeAnimatedStyles[0]}>

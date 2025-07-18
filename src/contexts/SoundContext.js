@@ -3,6 +3,18 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { Audio } from 'expo-av';
 import * as SecureStore from 'expo-secure-store';
 
+import buttonSound from '../../assets/sounds/button.mp3';
+import tapSound from '../../assets/sounds/tap.mp3';
+import whooshSound from '../../assets/sounds/whoosh.mp3';
+import whoosh2Sound from '../../assets/sounds/whoosh2.mp3';
+import bellSound from '../../assets/sounds/bell.mp3';
+import bell3Sound from '../../assets/sounds/button.mp3';
+import buzzerSound from '../../assets/sounds/buzzer2.mp3';
+import beepSound from '../../assets/sounds/button.mp3';
+import exhaleSound from '../../assets/sounds/button.mp3';
+import screamSound from '../../assets/sounds/eagle.mp3';
+import backgroundSound from '../../assets/sounds/background_river.mp3';
+
 const SoundContext = createContext({});
 
 export const useSound = () => {
@@ -15,31 +27,32 @@ export const useSound = () => {
 
 // Sound file mappings
 const SOUND_FILES = {
-  button: require('../../assets/sounds/button.mp3'),
-  tap: require('../../assets/sounds/tap.mp3'),
-  whoosh: require('../../assets/sounds/whoosh.mp3'),
-  whoosh2: require('../../assets/sounds/whoosh2.mp3'),
-  bell: require('../../assets/sounds/bell.mp3'),
-  bell3: require('../../assets/sounds/button.mp3'),
-  buzzer: require('../../assets/sounds/buzzer2.mp3'),
-  beep: require('../../assets/sounds/button.mp3'),
-  exhale: require('../../assets/sounds/button.mp3'),
-  scream: require('../../assets/sounds/eagle.mp3'),
-  background: require('../../assets/sounds/background_river.mp3'),
+  button: buttonSound,
+  tap: tapSound,
+  whoosh: whooshSound,
+  whoosh2: whoosh2Sound,
+  bell: bellSound,
+  bell3: bell3Sound,
+  buzzer: buzzerSound,
+  beep: beepSound,
+  exhale: exhaleSound,
+  scream: screamSound,
+  background: backgroundSound,
 };
 
 // Default volume levels for each sound
 const SOUND_VOLUMES = {
-  button: 0.2,
+  button: 0.5,
   tap: 0.7,
   whoosh: 1.0,
   whoosh2: 1.0,
   bell: 0.4,
   bell3: 0.4,
-  buzzer: 0.2,
+  buzzer: 0.4,
   beep: 0.3,
   exhale: 0.3,
-  scream: 0.2,
+  scream: 0.7,
+  background: 0.3,
 };
 
 export const SoundProvider = ({ children }) => {
@@ -48,7 +61,6 @@ export const SoundProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [backgroundMusicEnabled, setBackgroundMusicEnabled] = useState(true);
   const loadedSounds = useRef({});
-  const soundQueue = useRef([]);
   const isPlaying = useRef({});
 
   // Initialize audio settings
