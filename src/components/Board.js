@@ -138,15 +138,15 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   tileNumber: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: '700',
-    color: colors.text,
+    color: colors.primaryDark,
     textShadowColor: colors.glow,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 8,
   },
   tileQuestion: {
-    fontSize: 32,
+    fontSize: 44,
     fontWeight: '800',
     color: colors.primary,
     textShadowColor: colors.glow,

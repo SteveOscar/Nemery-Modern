@@ -11,10 +11,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Button from '../components/Button';
 import AppText from '../components/AppText';
 import { colors } from '../constants/colors';
+import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
-const HelpScreen = ({ onBack }) => {
+const HelpScreen = () => {
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
@@ -37,10 +39,10 @@ const HelpScreen = ({ onBack }) => {
         end={{ x: 1, y: 1 }}
       >
         <Button
-          title="← Back"
-          onPress={onBack}
-          variant="secondary"
-          style={styles.backButton}
+          text="← Back"
+          onPress={() => navigation.navigate('Menu')}
+          style={[styles.backButton, styles.backButtonCustom]}
+          textStyle={styles.backButtonText}
         />
         <AppText style={styles.title}>How to Play</AppText>
         <View style={styles.placeholder} />
@@ -55,7 +57,7 @@ const HelpScreen = ({ onBack }) => {
         >
           <AppText style={styles.sectionTitle}>Objective</AppText>
           <AppText style={styles.sectionText}>
-            Combine tiles with the same number to reach the 2048 tile and beyond!
+            Memorize the numbers on the tiles, and then turn them back over in ascending order.
           </AppText>
         </LinearGradient>
 
@@ -67,10 +69,10 @@ const HelpScreen = ({ onBack }) => {
         >
           <AppText style={styles.sectionTitle}>How to Play</AppText>
           <AppText style={styles.sectionText}>
-            • Swipe in any direction to move all tiles in that direction{'\n'}
-            • When two tiles with the same number touch, they merge into one{'\n'}
-            • After each move, a new tile (2 or 4) appears on the board{'\n'}
-            • The game ends when no more moves are possible
+            • Memorize the tiles when the level begins{'\n'}
+            • When the tiles flip to hide the numbers, tap them one-by-one in ascending order{'\n'}
+            • The game ends when you turn over a tile with a smaller number than the previous tile{'\n'}
+            • Difficulty increases as you progress through the levels
           </AppText>
         </LinearGradient>
 
@@ -88,35 +90,7 @@ const HelpScreen = ({ onBack }) => {
           </AppText>
         </LinearGradient>
 
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
-          style={styles.section}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <AppText style={styles.sectionTitle}>Tips</AppText>
-          <AppText style={styles.sectionText}>
-            • Keep your highest value tile in a corner{'\n'}
-            • Build chains of increasing values{'\n'}
-            • Don't let small tiles scatter around{'\n'}
-            • Plan your moves ahead
-          </AppText>
-        </LinearGradient>
 
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
-          style={styles.section}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <AppText style={styles.sectionTitle}>Controls</AppText>
-          <AppText style={styles.sectionText}>
-            • Use the arrow buttons to move tiles{'\n'}
-            • Tap "Undo" to reverse your last move{'\n'}
-            • Tap "New Game" to start over{'\n'}
-            • Your best score is automatically saved
-          </AppText>
-        </LinearGradient>
 
         <LinearGradient
           colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
@@ -168,6 +142,26 @@ const styles = StyleSheet.create({
   },
   backButton: {
     minWidth: 80,
+    height: 40,
+    marginBottom: 0,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonCustom: {
+    backgroundColor: colors.primaryDark,
+    borderColor: colors.primaryDark,
+    borderWidth: 2,
+    shadowColor: 'transparent',
+    elevation: 0,
+  },
+  backButtonText: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: colors.glow,
+    textShadowRadius: 4,
+    textShadowOffset: { width: 0, height: 0 },
   },
   title: {
     fontSize: 20,
@@ -206,7 +200,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   sectionText: {
-    fontSize: 16,
+    fontSize: 14,
     lineHeight: 24,
     color: 'rgba(255, 255, 255, 0.9)',
     textShadowColor: 'rgba(0, 0, 0, 0.3)',

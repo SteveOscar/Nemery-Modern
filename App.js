@@ -18,6 +18,7 @@ import MenuScreen from './src/screens/MenuScreen';
 import GameScreen from './src/screens/GameScreen';
 import ScoreboardScreen from './src/screens/ScoreboardScreen';
 import TransitionScreen from './src/screens/TransitionScreen';
+import HelpScreen from './src/screens/HelpScreen';
 
 const Stack = createStackNavigator();
 
@@ -57,6 +58,7 @@ export default function App() {
               <Stack.Screen name="Game" component={GameScreen} />
               <Stack.Screen name="Scoreboard" component={ScoreboardScreen} />
               <Stack.Screen name="Transition" component={TransitionScreen} />
+              <Stack.Screen name="HelpScreen" component={HelpScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SoundProvider>

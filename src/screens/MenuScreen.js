@@ -42,7 +42,7 @@ const MenuScreen = () => {
   // Flip card ref for animation control
   const flipCardRef = useRef(null);
   
-  const [helpText] = useState('???');
+  const [helpText] = useState('How To Play');
 
   useEffect(() => {
     // Check authentication
@@ -96,7 +96,7 @@ const MenuScreen = () => {
   };
 
   const handleHelp = () => {
-    navigation.navigate('Help');
+    navigation.navigate('HelpScreen');
   };
 
   const getDifficultyEmoji = () => {
