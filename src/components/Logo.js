@@ -33,11 +33,7 @@ const Logo = ({ size = 'medium', showText = true, style }) => {
         style={[styles.logo, getSize()]}
         resizeMode="contain"
       /> */}
-      {showText && (
-        <AppText style={[styles.text, { fontSize: getTextSize() }]}>
-          Nemery
-        </AppText>
-      )}
+      {showText && <AppText style={[styles.text, { fontSize: getTextSize() }]}>Nemery</AppText>}
     </View>
   );
 };
@@ -61,4 +57,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Logo; 
+export default Logo;

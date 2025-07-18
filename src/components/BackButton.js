@@ -3,13 +3,7 @@ import Button from './Button';
 import { StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 
-const BackButton = ({
-  onPress,
-  text = '← Back',
-  style,
-  textStyle,
-  ...props
-}) => (
+const BackButton = ({ onPress, text = '← Back', style, textStyle, ...props }) => (
   <Button
     text={text}
     onPress={onPress}
@@ -43,4 +37,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BackButton; 
+export default BackButton;

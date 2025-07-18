@@ -1,10 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import {
-  View,
-  Dimensions,
-  StyleSheet,
-  Animated,
-} from 'react-native';
+import { View, Dimensions, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSound } from '../contexts/SoundContext';
 import { useGame } from '../contexts/GameContext';
@@ -56,7 +51,11 @@ const GameScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
-  const [tileScales, setTileScales] = useState(Array(totalTiles).fill().map(() => new Animated.Value(1)));
+  const [tileScales, setTileScales] = useState(
+    Array(totalTiles)
+      .fill()
+      .map(() => new Animated.Value(1))
+  );
   // Remove cardRefs, use tileFlipped state
   const [tileFlipped, setTileFlipped] = useState(Array(totalTiles).fill(false));
   const [prevSelection, setPrevSelection] = useState(-1);
@@ -74,7 +73,8 @@ const GameScreen = () => {
   const [overlayMessage, setOverlayMessage] = useState('');
   const [overlayType, setOverlayType] = useState('success');
 
-  const { playSound, playBackgroundMusic, stopBackgroundMusic, backgroundMusicEnabled } = useSound();
+  const { playSound, playBackgroundMusic, stopBackgroundMusic, backgroundMusicEnabled } =
+    useSound();
   const playButtonSound = useCallback(() => playSound('tap', { overlap: true }), [playSound]);
   const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
   const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
@@ -91,7 +91,7 @@ const GameScreen = () => {
   const hideAllNumbers = useCallback(() => {
     setTileFlipped(Array(totalTiles).fill(true));
     setNumbers(Array(totalTiles).fill(''));
-    setShowTimerBar(false)
+    setShowTimerBar(false);
   }, [totalTiles]);
 
   // Show/hide tiles with memorization delay
@@ -150,29 +150,32 @@ const GameScreen = () => {
     [difficulty, showAllNumbers, hideAllNumbers, timerBarAnim, totalTiles]
   );
 
-  const showOverlay = useCallback((message, type = 'success', callback) => {
-    setOverlayMessage(message);
-    setOverlayType(type);
-    setOverlayVisible(true);
-    overlayAnim.setValue(0);
-    Animated.spring(overlayAnim, {
-      toValue: 1,
-      friction: 5,
-      tension: 80,
-      useNativeDriver: true,
-    }).start(() => {
-      setTimeout(() => {
-        Animated.timing(overlayAnim, {
-          toValue: 0,
-          duration: 400,
-          useNativeDriver: true,
-        }).start(() => {
-          setOverlayVisible(false);
-          if (callback) callback();
-        });
-      }, 1200);
-    });
-  }, [overlayAnim]);
+  const showOverlay = useCallback(
+    (message, type = 'success', callback) => {
+      setOverlayMessage(message);
+      setOverlayType(type);
+      setOverlayVisible(true);
+      overlayAnim.setValue(0);
+      Animated.spring(overlayAnim, {
+        toValue: 1,
+        friction: 5,
+        tension: 80,
+        useNativeDriver: true,
+      }).start(() => {
+        setTimeout(() => {
+          Animated.timing(overlayAnim, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }).start(() => {
+            setOverlayVisible(false);
+            if (callback) callback();
+          });
+        }, 1200);
+      });
+    },
+    [overlayAnim]
+  );
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -190,13 +193,21 @@ const GameScreen = () => {
   }, [level, showTiles]);
 
   useEffect(() => {
-    setTileScales(Array(totalTiles).fill().map(() => new Animated.Value(1)));
+    setTileScales(
+      Array(totalTiles)
+        .fill()
+        .map(() => new Animated.Value(1))
+    );
   }, [totalTiles]);
 
   // Reset all per-board state when GameScreen is focused (prevents stale arrays)
   useFocusEffect(
     React.useCallback(() => {
-      setTileScales(Array(totalTiles).fill().map(() => new Animated.Value(1)));
+      setTileScales(
+        Array(totalTiles)
+          .fill()
+          .map(() => new Animated.Value(1))
+      );
       setTileFlipped(Array(totalTiles).fill(false));
       setNumbers(Array(totalTiles).fill(''));
       setHiddenNumbers(generateNumbers(size, difficulty, level));
@@ -359,13 +370,15 @@ const GameScreen = () => {
         end={{ x: 1, y: 1 }}
       />
       <BackButton
-        text='← Quit'
+        text="← Quit"
         onPress={handleQuit}
         style={{ position: 'absolute', top: 50, left: 20, zIndex: 20 }}
       />
       {showTimerBar && (
         <View style={styles.timerBarContainer}>
-          <AppText style={styles.timerBarText}>Game starts in: {timerSeconds > 0 ? timerSeconds : ''}</AppText>
+          <AppText style={styles.timerBarText}>
+            Game starts in: {timerSeconds > 0 ? timerSeconds : ''}
+          </AppText>
           <Animated.View
             style={[
               styles.timerBar,
@@ -377,7 +390,7 @@ const GameScreen = () => {
               },
             ]}
           />
-                    <AppText style={styles.skipButton} onPress={skipMemorization}>
+          <AppText style={styles.skipButton} onPress={skipMemorization}>
             Start Now
           </AppText>
         </View>

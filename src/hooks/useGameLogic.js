@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import storageService from '../services/storage';
 
-
 const BOARD_SIZE = 4;
 const WINNING_TILE = 2048;
 
@@ -23,7 +22,7 @@ export const useGameLogic = () => {
     try {
       const savedBestScore = await storageService.getBestScore();
       setBestScore(savedBestScore);
-      
+
       const savedGameState = await storageService.getGameState();
       if (savedGameState && savedGameState.board) {
         setBoard(savedGameState.board);
@@ -42,7 +41,9 @@ export const useGameLogic = () => {
   };
 
   const createEmptyBoard = () => {
-    return Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0));
+    return Array(BOARD_SIZE)
+      .fill(null)
+      .map(() => Array(BOARD_SIZE).fill(0));
   };
 
   const addRandomTile = useCallback((currentBoard) => {
@@ -58,16 +59,16 @@ export const useGameLogic = () => {
     if (emptyCells.length === 0) return currentBoard;
 
     const { row, col } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    const newBoard = currentBoard.map(row => [...row]);
+    const newBoard = currentBoard.map((row) => [...row]);
     newBoard[row][col] = Math.random() < 0.9 ? 2 : 4;
-    
+
     return newBoard;
   }, []);
 
   const resetGame = useCallback(async () => {
     const newBoard = createEmptyBoard();
     const initialBoard = addRandomTile(addRandomTile(newBoard));
-    
+
     setBoard(initialBoard);
     setScore(0);
     setGameOver(false);
@@ -92,144 +93,147 @@ export const useGameLogic = () => {
     }
   };
 
-  const moveTiles = useCallback(async (direction) => {
-    const newBoard = board.map(row => [...row]);
-    let moved = false;
-    let newScore = score;
+  const moveTiles = useCallback(
+    async (direction) => {
+      const newBoard = board.map((row) => [...row]);
+      let moved = false;
+      let newScore = score;
 
-    const moveRow = (row, direction) => {
-      const filtered = row.filter(cell => cell !== 0);
-      const merged = [];
-      
-      for (let i = 0; i < filtered.length; i++) {
-        if (i < filtered.length - 1 && filtered[i] === filtered[i + 1]) {
-          const mergedValue = filtered[i] * 2;
-          merged.push(mergedValue);
-          newScore += mergedValue;
-          if (mergedValue === WINNING_TILE && !gameWon) {
-            setGameWon(true);
+      const moveRow = (row, direction) => {
+        const filtered = row.filter((cell) => cell !== 0);
+        const merged = [];
+
+        for (let i = 0; i < filtered.length; i++) {
+          if (i < filtered.length - 1 && filtered[i] === filtered[i + 1]) {
+            const mergedValue = filtered[i] * 2;
+            merged.push(mergedValue);
+            newScore += mergedValue;
+            if (mergedValue === WINNING_TILE && !gameWon) {
+              setGameWon(true);
+            }
+            i++;
+          } else {
+            merged.push(filtered[i]);
           }
-          i++;
-        } else {
-          merged.push(filtered[i]);
         }
-      }
-      
-      while (merged.length < BOARD_SIZE) {
-        merged.push(0);
-      }
-      
-      return merged;
-    };
 
-    const moveColumn = (col, direction) => {
-      const column = [];
-      for (let i = 0; i < BOARD_SIZE; i++) {
-        column.push(newBoard[i][col]);
-      }
-      
-      const filtered = column.filter(cell => cell !== 0);
-      const merged = [];
-      
-      for (let i = 0; i < filtered.length; i++) {
-        if (i < filtered.length - 1 && filtered[i] === filtered[i + 1]) {
-          const mergedValue = filtered[i] * 2;
-          merged.push(mergedValue);
-          newScore += mergedValue;
-          if (mergedValue === WINNING_TILE && !gameWon) {
-            setGameWon(true);
-          }
-          i++;
-        } else {
-          merged.push(filtered[i]);
+        while (merged.length < BOARD_SIZE) {
+          merged.push(0);
         }
-      }
-      
-      while (merged.length < BOARD_SIZE) {
-        merged.push(0);
-      }
-      
-      return merged;
-    };
 
-    // Save current state for undo
-    const currentState = {
-      board: board.map(row => [...row]),
-      score,
-      gameWon,
-    };
+        return merged;
+      };
 
-    // Apply move based on direction
-    switch (direction) {
-      case 'left':
+      const moveColumn = (col, direction) => {
+        const column = [];
         for (let i = 0; i < BOARD_SIZE; i++) {
-          const newRow = moveRow(newBoard[i], direction);
-          if (JSON.stringify(newRow) !== JSON.stringify(newBoard[i])) {
-            moved = true;
-          }
-          newBoard[i] = newRow;
+          column.push(newBoard[i][col]);
         }
-        break;
-      case 'right':
-        for (let i = 0; i < BOARD_SIZE; i++) {
-          const newRow = moveRow(newBoard[i].reverse(), direction).reverse();
-          if (JSON.stringify(newRow) !== JSON.stringify(newBoard[i])) {
-            moved = true;
-          }
-          newBoard[i] = newRow;
-        }
-        break;
-      case 'up':
-        for (let j = 0; j < BOARD_SIZE; j++) {
-          const newCol = moveColumn(j, direction);
-          if (JSON.stringify(newCol) !== JSON.stringify(newBoard.map(row => row[j]))) {
-            moved = true;
-          }
-          for (let i = 0; i < BOARD_SIZE; i++) {
-            newBoard[i][j] = newCol[i];
-          }
-        }
-        break;
-      case 'down':
-        for (let j = 0; j < BOARD_SIZE; j++) {
-          const column = newBoard.map(row => row[j]).reverse();
-          const newCol = moveColumn(j, direction).reverse();
-          if (JSON.stringify(newCol) !== JSON.stringify(column)) {
-            moved = true;
-          }
-          for (let i = 0; i < BOARD_SIZE; i++) {
-            newBoard[i][j] = newCol[i];
-          }
-        }
-        break;
-    }
 
-    if (moved) {
-      const newBoardWithTile = addRandomTile(newBoard);
-      const newHistory = [...moveHistory, currentState];
-      
-      setBoard(newBoardWithTile);
-      setScore(newScore);
-      setMoveHistory(newHistory);
-      setCanUndo(true);
+        const filtered = column.filter((cell) => cell !== 0);
+        const merged = [];
 
-      // Check for game over
-      if (isGameOver(newBoardWithTile)) {
-        setGameOver(true);
-        await handleGameOver(newScore);
+        for (let i = 0; i < filtered.length; i++) {
+          if (i < filtered.length - 1 && filtered[i] === filtered[i + 1]) {
+            const mergedValue = filtered[i] * 2;
+            merged.push(mergedValue);
+            newScore += mergedValue;
+            if (mergedValue === WINNING_TILE && !gameWon) {
+              setGameWon(true);
+            }
+            i++;
+          } else {
+            merged.push(filtered[i]);
+          }
+        }
+
+        while (merged.length < BOARD_SIZE) {
+          merged.push(0);
+        }
+
+        return merged;
+      };
+
+      // Save current state for undo
+      const currentState = {
+        board: board.map((row) => [...row]),
+        score,
+        gameWon,
+      };
+
+      // Apply move based on direction
+      switch (direction) {
+        case 'left':
+          for (let i = 0; i < BOARD_SIZE; i++) {
+            const newRow = moveRow(newBoard[i], direction);
+            if (JSON.stringify(newRow) !== JSON.stringify(newBoard[i])) {
+              moved = true;
+            }
+            newBoard[i] = newRow;
+          }
+          break;
+        case 'right':
+          for (let i = 0; i < BOARD_SIZE; i++) {
+            const newRow = moveRow(newBoard[i].reverse(), direction).reverse();
+            if (JSON.stringify(newRow) !== JSON.stringify(newBoard[i])) {
+              moved = true;
+            }
+            newBoard[i] = newRow;
+          }
+          break;
+        case 'up':
+          for (let j = 0; j < BOARD_SIZE; j++) {
+            const newCol = moveColumn(j, direction);
+            if (JSON.stringify(newCol) !== JSON.stringify(newBoard.map((row) => row[j]))) {
+              moved = true;
+            }
+            for (let i = 0; i < BOARD_SIZE; i++) {
+              newBoard[i][j] = newCol[i];
+            }
+          }
+          break;
+        case 'down':
+          for (let j = 0; j < BOARD_SIZE; j++) {
+            const column = newBoard.map((row) => row[j]).reverse();
+            const newCol = moveColumn(j, direction).reverse();
+            if (JSON.stringify(newCol) !== JSON.stringify(column)) {
+              moved = true;
+            }
+            for (let i = 0; i < BOARD_SIZE; i++) {
+              newBoard[i][j] = newCol[i];
+            }
+          }
+          break;
       }
 
-      await saveGameState(newBoardWithTile, newScore, false, gameWon, newHistory);
-      
-      // Update best score if necessary
-      if (newScore > bestScore) {
-        setBestScore(newScore);
-        await storageService.saveBestScore(newScore);
-      }
-    }
+      if (moved) {
+        const newBoardWithTile = addRandomTile(newBoard);
+        const newHistory = [...moveHistory, currentState];
 
-    return moved;
-  }, [board, score, gameWon, moveHistory, bestScore, addRandomTile]);
+        setBoard(newBoardWithTile);
+        setScore(newScore);
+        setMoveHistory(newHistory);
+        setCanUndo(true);
+
+        // Check for game over
+        if (isGameOver(newBoardWithTile)) {
+          setGameOver(true);
+          await handleGameOver(newScore);
+        }
+
+        await saveGameState(newBoardWithTile, newScore, false, gameWon, newHistory);
+
+        // Update best score if necessary
+        if (newScore > bestScore) {
+          setBestScore(newScore);
+          await storageService.saveBestScore(newScore);
+        }
+      }
+
+      return moved;
+    },
+    [board, score, gameWon, moveHistory, bestScore, addRandomTile]
+  );
 
   const isGameOver = useCallback((currentBoard) => {
     // Check if there are any empty cells
@@ -283,10 +287,13 @@ export const useGameLogic = () => {
     await saveGameState(lastState.board, lastState.score, false, lastState.gameWon, newHistory);
   }, [moveHistory]);
 
-  const move = useCallback(async (direction) => {
-    if (gameOver) return false;
-    return await moveTiles(direction);
-  }, [gameOver, moveTiles]);
+  const move = useCallback(
+    async (direction) => {
+      if (gameOver) return false;
+      return await moveTiles(direction);
+    },
+    [gameOver, moveTiles]
+  );
 
   return {
     board,
@@ -299,4 +306,4 @@ export const useGameLogic = () => {
     resetGame,
     undo,
   };
-}; 
+};

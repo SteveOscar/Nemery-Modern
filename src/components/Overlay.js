@@ -7,11 +7,10 @@ import { colors } from '../constants/colors';
 
 const Overlay = ({ visible, message, type, anim }) => {
   if (!visible) return null;
-  
-  const gradientColors = type === 'success' 
-    ? ['white', colors.accentGlow, colors.glow]
-    : [colors.error, '#FF6B6B'];
-    
+
+  const gradientColors =
+    type === 'success' ? ['white', colors.accentGlow, colors.glow] : [colors.error, '#FF6B6B'];
+
   return (
     <Animated.View
       style={[

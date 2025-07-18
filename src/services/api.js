@@ -2,8 +2,8 @@
 import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL
-const NEMERY_API_KEY = process.env.EXPO_PUBLIC_NEMERY_API_KEY
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const NEMERY_API_KEY = process.env.EXPO_PUBLIC_NEMERY_API_KEY;
 
 class ApiService {
   constructor() {
@@ -14,7 +14,7 @@ class ApiService {
   async init() {
     // Get device ID
     this.deviceId = Device.osBuildId || Device.modelId || 'unknown';
-    
+
     // Get saved auth token
     this.token = await SecureStore.getItemAsync('authToken');
   }
@@ -53,8 +53,8 @@ class ApiService {
           return { success: true, data: cachedData, fromCache: true };
         }
       }
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: error.message,
         isNetworkError: typeof navigator !== 'undefined' ? !navigator.onLine : false,
       };
@@ -68,7 +68,7 @@ class ApiService {
       if (cached) {
         const { data, timestamp } = JSON.parse(cached);
         const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-        
+
         if (Date.now() - timestamp < maxAge) {
           return data;
         }
@@ -95,7 +95,7 @@ class ApiService {
   // Auth methods
   async login(username) {
     console.log('Mock login for user:', username);
-    
+
     const result = await this.request('/users', {
       method: 'POST',
       body: JSON.stringify({
@@ -115,11 +115,11 @@ class ApiService {
 
   async checkUser() {
     const result = await this.request(`/users/${this.deviceId}`);
-    
+
     if (result.success && result.data) {
       await SecureStore.setItemAsync('user', JSON.stringify(result.data));
     }
-    
+
     return result;
   }
 
@@ -188,10 +188,8 @@ class ApiService {
       }
 
       // Remove successfully submitted scores from queue
-      const remainingScores = scores.filter(
-        s => !successfulSubmissions.includes(s.timestamp)
-      );
-      
+      const remainingScores = scores.filter((s) => !successfulSubmissions.includes(s.timestamp));
+
       if (remainingScores.length === 0) {
         await SecureStore.deleteItemAsync('queuedScores');
       } else {
@@ -209,7 +207,7 @@ const apiService = new ApiService();
 // Initialize on app start
 export const initializeApi = async () => {
   await apiService.init();
-  
+
   // Try to sync any queued scores
   await apiService.syncQueuedScores();
 };

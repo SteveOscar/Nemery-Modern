@@ -25,10 +25,7 @@
     "web": {
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-font",
-      "expo-secure-store"
-    ]
+    "plugins": ["expo-font", "expo-secure-store"]
   },
   "ios": {
     "bundleIdentifier": "stevenoscarolson.native.numery"

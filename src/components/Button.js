@@ -1,10 +1,5 @@
 import React, { useCallback } from 'react';
-import {
-  Text,
-  StyleSheet,
-  Pressable,
-  Dimensions,
-} from 'react-native';
+import { Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
@@ -13,20 +8,19 @@ import { theme } from '../constants/theme';
 
 const { height } = Dimensions.get('window');
 
-
 const Button = ({ text, onPress, sound = true, style, textStyle }) => {
   const playButtonSound = useCallback(async () => {
     if (!sound) return;
-    
+
     try {
       const { sound: audioSound } = await Audio.Sound.createAsync(
         require('../../assets/sounds/button.mp3'),
-        { 
+        {
           shouldPlay: true,
           volume: 0.2,
         }
       );
-      
+
       // Clean up sound after playing
       audioSound.setOnPlaybackStatusUpdate((status) => {
         if (status.didJustFinish) {
@@ -47,16 +41,12 @@ const Button = ({ text, onPress, sound = true, style, textStyle }) => {
 
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.container,
-        pressed && styles.pressed,
-        style,
-      ]}
+      style={({ pressed }) => [styles.container, pressed && styles.pressed, style]}
       onPress={handlePress}
       android_ripple={{ color: colors.accent }}
     >
-      <AppText 
-        style={[styles.buttonText, { fontFamily: theme.fontFamilyBold }, textStyle]} 
+      <AppText
+        style={[styles.buttonText, { fontFamily: theme.fontFamilyBold }, textStyle]}
         allowFontScaling={false}
       >
         {text}

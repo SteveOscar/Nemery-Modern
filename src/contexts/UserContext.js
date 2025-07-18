@@ -16,7 +16,9 @@ export const useUser = () => {
 };
 
 const getDeviceId = () => {
-  return Device.osBuildId || Device.modelId || Device.osInternalBuildId || Device.deviceName || 'unknown';
+  return (
+    Device.osBuildId || Device.modelId || Device.osInternalBuildId || Device.deviceName || 'unknown'
+  );
 };
 
 const normalizeUser = (rawData) => {
@@ -160,16 +162,19 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
-  const updateUser = useCallback(async (updates) => {
-    try {
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
-      await SecureStore.setItemAsync('user', JSON.stringify(updatedUser));
-    } catch (err) {
-      console.error('Error updating user:', err);
-      setError('Failed to update user');
-    }
-  }, [user]);
+  const updateUser = useCallback(
+    async (updates) => {
+      try {
+        const updatedUser = { ...user, ...updates };
+        setUser(updatedUser);
+        await SecureStore.setItemAsync('user', JSON.stringify(updatedUser));
+      } catch (err) {
+        console.error('Error updating user:', err);
+        setError('Failed to update user');
+      }
+    },
+    [user]
+  );
 
   const clearError = useCallback(() => {
     setError(null);
@@ -205,9 +210,5 @@ export const UserProvider = ({ children }) => {
     deviceId: user?.device || getDeviceId(),
   };
 
-  return (
-    <UserContext.Provider value={value}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

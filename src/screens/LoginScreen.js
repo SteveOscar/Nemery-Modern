@@ -29,10 +29,10 @@ const LoginScreen = () => {
   const navigation = useNavigation();
   const { login, isLoading, error, message, clearError, isAuthenticated } = useUser();
   const { playSound } = useSound();
-  
+
   const [username, setUsername] = useState('');
   const [localError, setLocalError] = useState('');
-  
+
   // Animation values
   const fadeAnim1 = useRef(new Animated.Value(0)).current;
   const fadeAnim2 = useRef(new Animated.Value(0)).current;
@@ -72,12 +72,12 @@ const LoginScreen = () => {
   const handleLogin = async () => {
     Keyboard.dismiss();
     setLocalError('');
-    
+
     if (!username.trim()) {
       setLocalError('Enter a name');
       return;
     }
-    
+
     if (username.length > 10) {
       setLocalError(`Name is ${username.length - 10} characters too long`);
       return;
@@ -103,7 +103,7 @@ const LoginScreen = () => {
   const displayError = localError || error;
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
@@ -119,29 +119,23 @@ const LoginScreen = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-      
+
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView 
+        <ScrollView
           ref={scrollViewRef}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {isLoading && (
-            <ActivityIndicator 
-              size="large" 
-              color="#ffffff" 
-              style={styles.loader}
-            />
-          )}
-          
+          {isLoading && <ActivityIndicator size="large" color="#ffffff" style={styles.loader} />}
+
           <Animated.View style={[styles.welcomeContainer, { opacity: fadeAnim1 }]}>
             <AppText style={styles.welcomeText} allowFontScaling={false}>
               Welcome to
             </AppText>
             <Logo letters="NEMERY" />
           </Animated.View>
-          
+
           <Animated.View style={[styles.formContainer, { opacity: fadeAnim2 }]}>
             <LinearGradient
               colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
@@ -154,7 +148,7 @@ const LoginScreen = () => {
               </AppText>
             </LinearGradient>
           </Animated.View>
-          
+
           <Animated.View style={[styles.inputContainer, { opacity: fadeAnim3 }]}>
             <LinearGradient
               colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
@@ -179,20 +173,20 @@ const LoginScreen = () => {
                 editable={!isLoading}
                 fontFamily="System"
               />
-              
+
               <Button
                 text="Submit"
                 onPress={handleLogin}
                 style={styles.submitButton}
                 disabled={isLoading}
               />
-              
+
               {displayError ? (
                 <AppText style={styles.errorText} allowFontScaling={false}>
                   {displayError}
                 </AppText>
               ) : null}
-              
+
               {message ? (
                 <AppText style={styles.messageText} allowFontScaling={false}>
                   {message}
@@ -200,7 +194,7 @@ const LoginScreen = () => {
               ) : null}
             </LinearGradient>
           </Animated.View>
-          
+
           <View style={styles.spacer} />
         </ScrollView>
       </TouchableWithoutFeedback>

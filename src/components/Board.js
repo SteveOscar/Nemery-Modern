@@ -46,8 +46,8 @@ const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
         <FlippableTile
           isFlipped={tileFlipped[id]}
           frontContent={
-            <TouchableOpacity 
-              style={styles.tileButton} 
+            <TouchableOpacity
+              style={styles.tileButton}
               onPress={() => onTilePress(id)}
               activeOpacity={0.8}
             >
@@ -62,8 +62,8 @@ const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
             </TouchableOpacity>
           }
           backContent={
-            <TouchableOpacity 
-              style={styles.tileButton} 
+            <TouchableOpacity
+              style={styles.tileButton}
               onPress={() => onTilePress(id)}
               activeOpacity={0.8}
             >

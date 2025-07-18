@@ -8,10 +8,10 @@ export const layout = {
     width,
     height,
   },
-  
+
   // Status bar height
   statusBarHeight: StatusBar.currentHeight || 0,
-  
+
   // Safe area insets (will be set dynamically)
   safeArea: {
     top: 0,
@@ -19,7 +19,7 @@ export const layout = {
     left: 0,
     right: 0,
   },
-  
+
   // Spacing
   spacing: {
     xs: 4,
@@ -29,7 +29,7 @@ export const layout = {
     xl: 32,
     xxl: 48,
   },
-  
+
   // Padding
   padding: {
     xs: 8,
@@ -39,7 +39,7 @@ export const layout = {
     xl: 24,
     xxl: 32,
   },
-  
+
   // Margins
   margin: {
     xs: 4,
@@ -49,7 +49,7 @@ export const layout = {
     xl: 32,
     xxl: 48,
   },
-  
+
   // Border radius
   borderRadius: {
     xs: 4,
@@ -60,7 +60,7 @@ export const layout = {
     xxl: 24,
     round: 50,
   },
-  
+
   // Button sizes
   button: {
     height: {
@@ -73,7 +73,7 @@ export const layout = {
       vertical: 12,
     },
   },
-  
+
   // Input sizes
   input: {
     height: 48,
@@ -82,45 +82,45 @@ export const layout = {
       vertical: 12,
     },
   },
-  
+
   // Card dimensions
   card: {
     padding: 16,
     margin: 8,
     borderRadius: 12,
   },
-  
+
   // Game board dimensions
   gameBoard: {
     size: Math.min(width - 40, 350),
     tileSize: Math.min(width - 40, 350) / 4,
     gap: 4,
   },
-  
+
   // Header dimensions
   header: {
     height: 56,
     padding: 16,
   },
-  
+
   // Navigation bar dimensions
   navigation: {
     height: Platform.OS === 'ios' ? 44 : 56,
     padding: 16,
   },
-  
+
   // Tab bar dimensions
   tabBar: {
     height: Platform.OS === 'ios' ? 83 : 60,
     padding: 8,
   },
-  
+
   // Modal dimensions
   modal: {
     borderRadius: 16,
     padding: 20,
   },
-  
+
   // Avatar sizes
   avatar: {
     small: 32,
@@ -128,7 +128,7 @@ export const layout = {
     large: 64,
     xlarge: 96,
   },
-  
+
   // Icon sizes
   icon: {
     small: 16,
@@ -136,7 +136,7 @@ export const layout = {
     large: 32,
     xlarge: 48,
   },
-  
+
   // Font sizes
   fontSize: {
     xs: 12,
@@ -147,7 +147,7 @@ export const layout = {
     xxl: 24,
     xxxl: 32,
   },
-  
+
   // Line heights
   lineHeight: {
     xs: 16,
@@ -158,7 +158,7 @@ export const layout = {
     xxl: 36,
     xxxl: 40,
   },
-  
+
   // Shadows
   shadow: {
     small: {
@@ -187,12 +187,12 @@ export const layout = {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.30,
+      shadowOpacity: 0.3,
       shadowRadius: 4.65,
       elevation: 8,
     },
   },
-  
+
   // Z-index values
   zIndex: {
     base: 0,
@@ -202,21 +202,21 @@ export const layout = {
     overlay: 200,
     tooltip: 300,
   },
-  
+
   // Animation durations
   animation: {
     fast: 200,
     normal: 300,
     slow: 500,
   },
-  
+
   // Breakpoints
   breakpoints: {
     small: 375,
     medium: 768,
     large: 1024,
   },
-  
+
   // Platform-specific values
   platform: {
     ios: {
@@ -234,7 +234,8 @@ export const layout = {
 
 // Helper functions
 export const isSmallScreen = () => width < layout.breakpoints.small;
-export const isMediumScreen = () => width >= layout.breakpoints.small && width < layout.breakpoints.medium;
+export const isMediumScreen = () =>
+  width >= layout.breakpoints.small && width < layout.breakpoints.medium;
 export const isLargeScreen = () => width >= layout.breakpoints.medium;
 
 export const getResponsiveValue = (small, medium, large) => {
@@ -249,4 +250,4 @@ export const getGameBoardSize = () => {
     boardSize: maxSize,
     tileSize: maxSize / 4,
   };
-}; 
+};

@@ -122,7 +122,9 @@ class StorageService {
     const newStats = {
       gamesPlayed: currentStats.gamesPlayed + 1,
       totalScore: currentStats.totalScore + gameResult.score,
-      averageScore: Math.round((currentStats.totalScore + gameResult.score) / (currentStats.gamesPlayed + 1)),
+      averageScore: Math.round(
+        (currentStats.totalScore + gameResult.score) / (currentStats.gamesPlayed + 1)
+      ),
       highestTile: Math.max(currentStats.highestTile, gameResult.highestTile),
       totalMoves: currentStats.totalMoves + gameResult.moves,
     };
@@ -186,4 +188,4 @@ class StorageService {
   }
 }
 
-export default new StorageService(); 
+export default new StorageService();

@@ -1,21 +1,14 @@
 import React, { useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ActivityIndicator,
-  Animated,
-} from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, Animated } from 'react-native';
 import Logo from '../components/Logo';
 import AppText from '../components/AppText';
 import { colors } from '../constants/colors';
 
-const TransitionScreen = ({ 
-  message = 'Loading...', 
-  onComplete, 
+const TransitionScreen = ({
+  message = 'Loading...',
+  onComplete,
   duration = 2000,
-  showLogo = true 
+  showLogo = true,
 }) => {
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.8);
@@ -62,7 +55,7 @@ const TransitionScreen = ({
         ]}
       >
         {showLogo && <Logo size="large" style={styles.logo} />}
-        
+
         <View style={styles.messageContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <AppText style={styles.message}>{message}</AppText>
@@ -100,4 +93,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TransitionScreen; 
+export default TransitionScreen;

@@ -27,11 +27,11 @@ const ScoreboardScreen = () => {
   const { highScores, saveHighScores } = useGame();
   const { playSound } = useSound();
   const { username } = useUser();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // Animation values
   const fadeAnim1 = useRef(new Animated.Value(0)).current;
   const fadeAnim2 = useRef(new Animated.Value(0)).current;
@@ -62,7 +62,7 @@ const ScoreboardScreen = () => {
 
     // Start star rotation
     startStarAnimation();
-    
+
     // Load fresh scores
     loadScores();
   }, []);
@@ -88,7 +88,7 @@ const ScoreboardScreen = () => {
 
     try {
       const result = await apiService.getHighScores();
-      
+
       if (result.success) {
         await saveHighScores(result.data);
       } else if (!result.fromCache) {
@@ -124,21 +124,15 @@ const ScoreboardScreen = () => {
         <AppText style={styles.rankText} allowFontScaling={false}>
           {medal || `${index + 1}.`}
         </AppText>
-        <AppText 
-          style={[
-            styles.nameText, 
-            isCurrentUser && styles.currentUserText
-          ]} 
+        <AppText
+          style={[styles.nameText, isCurrentUser && styles.currentUserText]}
           allowFontScaling={false}
           numberOfLines={1}
         >
           {name}
         </AppText>
-        <AppText 
-          style={[
-            styles.scoreText,
-            isCurrentUser && styles.currentUserText
-          ]} 
+        <AppText
+          style={[styles.scoreText, isCurrentUser && styles.currentUserText]}
           allowFontScaling={false}
         >
           {points}
@@ -149,10 +143,14 @@ const ScoreboardScreen = () => {
 
   const getMedal = (index) => {
     switch (index) {
-      case 0: return '🥇';
-      case 1: return '🥈';
-      case 2: return '🥉';
-      default: return null;
+      case 0:
+        return '🥇';
+      case 1:
+        return '🥈';
+      case 2:
+        return '🥉';
+      default:
+        return null;
     }
   };
 
@@ -179,88 +177,85 @@ const ScoreboardScreen = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-      
 
+      <BackButton
+        style={{ marginTop: 45, marginLeft: 15 }}
+        onPress={() => navigation.navigate('Menu')}
+      />
+      <View style={styles.starContainer}>
+        <Animated.Text style={[styles.star, { transform: [{ rotate }] }]}>⭐</Animated.Text>
+      </View>
 
-        <BackButton
-          style={{marginTop: 45, marginLeft: 15}}
-          onPress={() => navigation.navigate('Menu')}
-        />
-        <View style={styles.starContainer}>
-          <Animated.Text
-            style={[
-              styles.star,
-              { transform: [{ rotate }] }
-            ]}
-          >
-            ⭐
-          </Animated.Text>
-        </View>
+      <Animated.View style={{ opacity: fadeAnim1 }}>
+        <AppText style={styles.title} allowFontScaling={false}>
+          The Legends
+        </AppText>
+      </Animated.View>
 
-
-        <Animated.View style={{ opacity: fadeAnim1 }}>
-          <AppText style={styles.title} allowFontScaling={false}>
-            The Legends
-          </AppText>
-        </Animated.View>
-
-        <View style={{borderWidth: 0, borderRadius: 10, marginHorizontal: 5, borderColor: 'white', backgroundColor: 'rgba(0, 0, 0, 0.17)'}}>
-        <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={() => loadScores(true)}
-            tintColor="#ffffff"
-          />
-        }
+      <View
+        style={{
+          borderWidth: 0,
+          borderRadius: 10,
+          marginHorizontal: 5,
+          borderColor: 'white',
+          backgroundColor: 'rgba(0, 0, 0, 0.17)',
+        }}
       >
-
-        <Animated.View style={[styles.scoresContainer, { opacity: fadeAnim2 }]}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color="#ffffff" />
-          ) : error ? (
-            <LinearGradient
-              colors={['rgba(255, 107, 107, 0.2)', 'rgba(255, 107, 107, 0.1)']}
-              style={styles.errorContainer}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <AppText style={styles.errorText}>{error}</AppText>
-            </LinearGradient>
-          ) : sortedScores.length > 0 ? (
-            sortedScores.map((score, index) => renderHighScore(score, index))
-          ) : (
-            <LinearGradient
-              colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
-              style={styles.emptyContainer}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <AppText style={styles.emptyText}>No scores yet!</AppText>
-            </LinearGradient>
-          )}
-        </Animated.View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={() => loadScores(true)}
+              tintColor="#ffffff"
+            />
+          }
+        >
+          <Animated.View style={[styles.scoresContainer, { opacity: fadeAnim2 }]}>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#ffffff" />
+            ) : error ? (
+              <LinearGradient
+                colors={['rgba(255, 107, 107, 0.2)', 'rgba(255, 107, 107, 0.1)']}
+                style={styles.errorContainer}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <AppText style={styles.errorText}>{error}</AppText>
+              </LinearGradient>
+            ) : sortedScores.length > 0 ? (
+              sortedScores.map((score, index) => renderHighScore(score, index))
+            ) : (
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+                style={styles.emptyContainer}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <AppText style={styles.emptyText}>No scores yet!</AppText>
+              </LinearGradient>
+            )}
+          </Animated.View>
         </ScrollView>
-        </View>
+      </View>
 
-        <Animated.View style={[styles.userScoreContainer, { opacity: fadeAnim2 }]}>
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
-            style={styles.userScoreCard}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <View style={styles.divider} />
-            <AppText style={styles.yourScoreLabel} allowFontScaling={false}>
-              Your Best:
-            </AppText>
-            <AppText style={styles.yourScoreValue} allowFontScaling={false}>
-              {userScore}
-            </AppText>
-          </LinearGradient>
-        </Animated.View>
+      <Animated.View style={[styles.userScoreContainer, { opacity: fadeAnim2 }]}>
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+          style={styles.userScoreCard}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.divider} />
+          <AppText style={styles.yourScoreLabel} allowFontScaling={false}>
+            Your Best:
+          </AppText>
+          <AppText style={styles.yourScoreValue} allowFontScaling={false}>
+            {userScore}
+          </AppText>
+        </LinearGradient>
+      </Animated.View>
     </View>
   );
 };
@@ -287,7 +282,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingVertical: 20,
     paddingHorizontal: 20,
-    maxHeight: height * .5
+    maxHeight: height * 0.5,
   },
   starContainer: {
     alignItems: 'center',

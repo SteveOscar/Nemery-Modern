@@ -1,10 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Image,
-} from 'react-native';
+import { View, StyleSheet, Dimensions, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue,
@@ -31,15 +26,17 @@ const MenuScreen = () => {
   const { difficulty, changeDifficulty, startGame, resetGameState } = useGame();
   const { playSound, soundEnabled, toggleSound } = useSound();
   const { username, isAuthenticated } = useUser();
-  
+
   // Reanimated shared values
   const fadeAnims = useRef(
-    Array(5).fill().map(() => useSharedValue(0))
+    Array(5)
+      .fill()
+      .map(() => useSharedValue(0))
   ).current;
-  
+
   // Flip card ref for animation control
   const flipCardRef = useRef(null);
-  
+
   const [helpText] = useState('How To Play');
   const { backgroundMusicEnabled, toggleBackgroundMusic } = useSound();
 
@@ -55,7 +52,7 @@ const MenuScreen = () => {
       anim.value = withDelay(
         index * 150,
         withTiming(1, {
-          duration: 700 - (index * 100),
+          duration: 700 - index * 100,
           easing: Easing.out(Easing.ease),
         })
       );
@@ -90,7 +87,7 @@ const MenuScreen = () => {
   const handleDifficultyChange = async () => {
     resetGameState();
     changeDifficulty();
-    
+
     // Play scream sound when switching to Extreme
     if (difficulty === 'Hard') {
       await playSound('scream');
@@ -107,15 +104,20 @@ const MenuScreen = () => {
 
   const getDifficultyEmoji = () => {
     switch (difficulty) {
-      case 'Easy': return '😀';
-      case 'Medium': return '😐';
-      case 'Hard': return '😳';
-      case 'Extreme': return '💀';
-      default: return '😀';
+      case 'Easy':
+        return '😀';
+      case 'Medium':
+        return '😐';
+      case 'Hard':
+        return '😳';
+      case 'Extreme':
+        return '💀';
+      default:
+        return '😀';
     }
   };
 
-  const fadeAnimatedStyles = fadeAnims.map((anim, index) => 
+  const fadeAnimatedStyles = fadeAnims.map((anim, index) =>
     useAnimatedStyle(() => ({
       opacity: anim.value,
     }))
@@ -135,7 +137,7 @@ const MenuScreen = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-      
+
       <View style={styles.iconContainer}>
         <LinearGradient
           colors={[colors.surface, colors.background]}
@@ -155,15 +157,10 @@ const MenuScreen = () => {
         <Animated.View style={fadeAnimatedStyles[0]}>
           <Logo letters="NEMERY" />
           <AppText style={styles.subtext}>Numbers + Memory</AppText>
-          
         </Animated.View>
 
         <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[0]]}>
-          <Button
-            text="Start"
-            onPress={handleStartGame}
-            sound={soundEnabled}
-          />
+          <Button text="Start" onPress={handleStartGame} sound={soundEnabled} />
         </Animated.View>
 
         <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[1]]}>
@@ -175,19 +172,11 @@ const MenuScreen = () => {
         </Animated.View>
 
         <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[2]]}>
-          <Button
-            text="High Scores"
-            onPress={handleHighScores}
-            sound={soundEnabled}
-          />
+          <Button text="High Scores" onPress={handleHighScores} sound={soundEnabled} />
         </Animated.View>
 
         <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[3]]}>
-          <Button
-            text={helpText}
-            onPress={handleHelp}
-            sound={soundEnabled}
-          />
+          <Button text={helpText} onPress={handleHelp} sound={soundEnabled} />
         </Animated.View>
 
         <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[4]]}>
@@ -213,7 +202,10 @@ const MenuScreen = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <AppText style={[styles.welcomeText, { color: colors.text, textShadowColor: colors.glow }]} allowFontScaling={false}>
+        <AppText
+          style={[styles.welcomeText, { color: colors.text, textShadowColor: colors.glow }]}
+          allowFontScaling={false}
+        >
           Welcome, {username}!
         </AppText>
       </LinearGradient>
@@ -245,7 +237,7 @@ const styles = StyleSheet.create({
     height: height * 0.15,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -40
+    marginTop: -40,
   },
   iconWrapper: {
     width: width * 0.25,

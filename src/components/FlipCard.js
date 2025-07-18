@@ -10,16 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 const FlipCard = forwardRef(
-  (
-    {
-      children,
-      style,
-      duration = 600,
-      flipDirection = 'y',
-      perspective = 1000,
-    },
-    ref
-  ) => {
+  ({ children, style, duration = 600, flipDirection = 'y', perspective = 1000 }, ref) => {
     const rotate = useSharedValue(0);
     const [isFlipped, setIsFlipped] = useState(false);
 
@@ -31,18 +22,8 @@ const FlipCard = forwardRef(
             ? { rotateY: `${rotate.value}deg` }
             : { rotateX: `${rotate.value}deg` },
         ],
-        opacity: interpolate(
-          rotate.value,
-          [0, 90, 91, 180],
-          [1, 1, 0, 0],
-          Extrapolate.CLAMP
-        ),
-        zIndex: interpolate(
-          rotate.value,
-          [0, 90, 91, 180],
-          [1, 1, 0, 0],
-          Extrapolate.CLAMP
-        ),
+        opacity: interpolate(rotate.value, [0, 90, 91, 180], [1, 1, 0, 0], Extrapolate.CLAMP),
+        zIndex: interpolate(rotate.value, [0, 90, 91, 180], [1, 1, 0, 0], Extrapolate.CLAMP),
       };
     });
 
@@ -54,33 +35,19 @@ const FlipCard = forwardRef(
             ? { rotateY: `${rotate.value + 180}deg` }
             : { rotateX: `${rotate.value + 180}deg` },
         ],
-        opacity: interpolate(
-          rotate.value,
-          [0, 89, 90, 180],
-          [0, 0, 1, 1],
-          Extrapolate.CLAMP
-        ),
-        zIndex: interpolate(
-          rotate.value,
-          [0, 89, 90, 180],
-          [0, 0, 1, 1],
-          Extrapolate.CLAMP
-        ),
+        opacity: interpolate(rotate.value, [0, 89, 90, 180], [0, 0, 1, 1], Extrapolate.CLAMP),
+        zIndex: interpolate(rotate.value, [0, 89, 90, 180], [0, 0, 1, 1], Extrapolate.CLAMP),
       };
     });
 
     useImperativeHandle(ref, () => ({
       flip: () => {
         const newFlipped = !isFlipped;
-        rotate.value = withTiming(
-          newFlipped ? 180 : 0,
-          { duration },
-          (finished) => {
-            if (finished) {
-              runOnJS(setIsFlipped)(newFlipped);
-            }
+        rotate.value = withTiming(newFlipped ? 180 : 0, { duration }, (finished) => {
+          if (finished) {
+            runOnJS(setIsFlipped)(newFlipped);
           }
-        );
+        });
       },
     }));
 

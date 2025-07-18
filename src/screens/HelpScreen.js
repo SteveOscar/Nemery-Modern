@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AppText from '../components/AppText';
 import { colors } from '../constants/colors';
@@ -31,16 +24,14 @@ const HelpScreen = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-      
+
       <LinearGradient
         colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <BackButton
-          onPress={() => navigation.navigate('Menu')}
-        />
+        <BackButton onPress={() => navigation.navigate('Menu')} />
         <AppText style={styles.title}>How to Play</AppText>
         <View style={styles.placeholder} />
       </LinearGradient>
@@ -66,10 +57,10 @@ const HelpScreen = () => {
         >
           <AppText style={styles.sectionTitle}>How to Play</AppText>
           <AppText style={styles.sectionText}>
-            • Memorize the tiles when the level begins{'\n'}
-            • When the tiles flip to hide the numbers, tap them one-by-one in ascending order{'\n'}
-            • The game ends when you turn over a tile with a smaller number than the previous tile{'\n'}
-            • Difficulty increases as you progress through the levels
+            • Memorize the tiles when the level begins{'\n'}• When the tiles flip to hide the
+            numbers, tap them one-by-one in ascending order{'\n'}• The game ends when you turn over
+            a tile with a smaller number than the previous tile{'\n'}• Difficulty increases as you
+            progress through the levels
           </AppText>
         </LinearGradient>
 
@@ -81,13 +72,10 @@ const HelpScreen = () => {
         >
           <AppText style={styles.sectionTitle}>Scoring</AppText>
           <AppText style={styles.sectionText}>
-            • Each merge gives you points equal to the value of the merged tile{'\n'}
-            • Higher value tiles give more points{'\n'}
-            • Try to achieve the highest score possible!
+            • Each merge gives you points equal to the value of the merged tile{'\n'}• Higher value
+            tiles give more points{'\n'}• Try to achieve the highest score possible!
           </AppText>
         </LinearGradient>
-
-
 
         <LinearGradient
           colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
@@ -95,9 +83,7 @@ const HelpScreen = () => {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <AppText style={styles.footerText}>
-            Good luck and have fun playing Nemery!
-          </AppText>
+          <AppText style={styles.footerText}>Good luck and have fun playing Nemery!</AppText>
         </LinearGradient>
       </ScrollView>
     </SafeAreaView>
@@ -204,4 +190,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HelpScreen; 
+export default HelpScreen;

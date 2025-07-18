@@ -74,11 +74,11 @@ export const SoundProvider = ({ children }) => {
       const savedSoundEnabled = await SecureStore.getItemAsync('soundEnabled');
       const savedVolume = await SecureStore.getItemAsync('masterVolume');
       const savedMusicEnabled = await SecureStore.getItemAsync('backgroundMusicEnabled');
-      
+
       if (savedSoundEnabled !== null) {
         setSoundEnabled(savedSoundEnabled === 'true');
       }
-      
+
       if (savedVolume !== null) {
         setMasterVolume(parseFloat(savedVolume));
       }
@@ -89,7 +89,6 @@ export const SoundProvider = ({ children }) => {
 
       // Preload common sounds
       await preloadSounds(['button', 'tap', 'whoosh']);
-      
     } catch (error) {
       console.error('Error initializing audio:', error);
     } finally {
@@ -99,109 +98,116 @@ export const SoundProvider = ({ children }) => {
 
   const cleanupAllSounds = async () => {
     const sounds = Object.values(loadedSounds.current);
-    await Promise.all(sounds.map(async (sound) => {
-      try {
-        await sound.stopAsync();
-        await sound.unloadAsync();
-      } catch (error) {
-        console.warn('Error cleaning up sound:', error);
-      }
-    }));
+    await Promise.all(
+      sounds.map(async (sound) => {
+        try {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        } catch (error) {
+          console.warn('Error cleaning up sound:', error);
+        }
+      })
+    );
     loadedSounds.current = {};
     isPlaying.current = {};
   };
 
-  const playSound = useCallback(async (soundName, options = {}) => {
-    if (!soundEnabled || !SOUND_FILES[soundName]) {
-      return null;
-    }
-
-    try {
-      // Check if sound is already playing
-      if (isPlaying.current[soundName] && !options.overlap) {
+  const playSound = useCallback(
+    async (soundName, options = {}) => {
+      if (!soundEnabled || !SOUND_FILES[soundName]) {
         return null;
       }
 
-      let sound = loadedSounds.current[soundName];
-      
-      if (!sound) {
-        // Load the sound
-        const { sound: newSound } = await Audio.Sound.createAsync(
-          SOUND_FILES[soundName],
-          {
+      try {
+        // Check if sound is already playing
+        if (isPlaying.current[soundName] && !options.overlap) {
+          return null;
+        }
+
+        let sound = loadedSounds.current[soundName];
+
+        if (!sound) {
+          // Load the sound
+          const { sound: newSound } = await Audio.Sound.createAsync(SOUND_FILES[soundName], {
             shouldPlay: false,
             volume: (SOUND_VOLUMES[soundName] || 0.5) * masterVolume,
-          }
-        );
-        
-        loadedSounds.current[soundName] = newSound;
-        sound = newSound;
-      } else {
-        // Reset the sound position
-        await sound.stopAsync();
-        await sound.setPositionAsync(0);
-      }
-      
-      // Apply custom volume if provided
-      if (options.volume !== undefined) {
-        await sound.setVolumeAsync(options.volume * masterVolume);
-      }
-      
-      // Apply playback rate if provided (for pitch effects)
-      if (options.rate !== undefined) {
-        await sound.setRateAsync(options.rate, true);
-      }
-      
-      // Mark as playing
-      isPlaying.current[soundName] = true;
-      
-      // Set up playback status update
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.didJustFinish) {
-          isPlaying.current[soundName] = false;
-          
-          // Unload one-shot sounds
-          if (options.oneShot) {
-            sound.unloadAsync();
-            delete loadedSounds.current[soundName];
-          }
-          
-          // Call completion callback if provided
-          if (options.onComplete) {
-            options.onComplete();
-          }
+          });
+
+          loadedSounds.current[soundName] = newSound;
+          sound = newSound;
+        } else {
+          // Reset the sound position
+          await sound.stopAsync();
+          await sound.setPositionAsync(0);
         }
-      });
-      
-      // Play the sound
-      await sound.playAsync();
-      
-      return sound;
-      
-    } catch (error) {
-      console.error(`Error playing sound ${soundName}:`, error);
-      isPlaying.current[soundName] = false;
-      return null;
-    }
-  }, [soundEnabled, masterVolume]);
 
-  const playRandomSound = useCallback(async (soundNames, options = {}) => {
-    const randomIndex = Math.floor(Math.random() * soundNames.length);
-    return playSound(soundNames[randomIndex], options);
-  }, [playSound]);
+        // Apply custom volume if provided
+        if (options.volume !== undefined) {
+          await sound.setVolumeAsync(options.volume * masterVolume);
+        }
 
-  const playSequence = useCallback(async (soundSequence) => {
-    for (const item of soundSequence) {
-      if (typeof item === 'string') {
-        await playSound(item, { oneShot: true });
-        await new Promise(resolve => setTimeout(resolve, 300)); // Default delay
-      } else {
-        const { sound, delay = 300, ...options } = item;
-        await playSound(sound, options);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        // Apply playback rate if provided (for pitch effects)
+        if (options.rate !== undefined) {
+          await sound.setRateAsync(options.rate, true);
+        }
+
+        // Mark as playing
+        isPlaying.current[soundName] = true;
+
+        // Set up playback status update
+        sound.setOnPlaybackStatusUpdate((status) => {
+          if (status.didJustFinish) {
+            isPlaying.current[soundName] = false;
+
+            // Unload one-shot sounds
+            if (options.oneShot) {
+              sound.unloadAsync();
+              delete loadedSounds.current[soundName];
+            }
+
+            // Call completion callback if provided
+            if (options.onComplete) {
+              options.onComplete();
+            }
+          }
+        });
+
+        // Play the sound
+        await sound.playAsync();
+
+        return sound;
+      } catch (error) {
+        console.error(`Error playing sound ${soundName}:`, error);
+        isPlaying.current[soundName] = false;
+        return null;
       }
-    }
-  }, [playSound]);
+    },
+    [soundEnabled, masterVolume]
+  );
+
+  const playRandomSound = useCallback(
+    async (soundNames, options = {}) => {
+      const randomIndex = Math.floor(Math.random() * soundNames.length);
+      return playSound(soundNames[randomIndex], options);
+    },
+    [playSound]
+  );
+
+  const playSequence = useCallback(
+    async (soundSequence) => {
+      for (const item of soundSequence) {
+        if (typeof item === 'string') {
+          await playSound(item, { oneShot: true });
+          await new Promise((resolve) => setTimeout(resolve, 300)); // Default delay
+        } else {
+          const { sound, delay = 300, ...options } = item;
+          await playSound(sound, options);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    },
+    [playSound]
+  );
 
   const stopSound = useCallback(async (soundName) => {
     const sound = loadedSounds.current[soundName];
@@ -224,36 +230,36 @@ export const SoundProvider = ({ children }) => {
         console.warn('Error stopping sound:', error);
       }
     });
-    
+
     await Promise.all(promises);
   }, []);
 
-  const preloadSounds = useCallback(async (soundNames = []) => {
-    const promises = soundNames.map(async (soundName) => {
-      if (!loadedSounds.current[soundName] && SOUND_FILES[soundName]) {
-        try {
-          const { sound } = await Audio.Sound.createAsync(
-            SOUND_FILES[soundName],
-            {
+  const preloadSounds = useCallback(
+    async (soundNames = []) => {
+      const promises = soundNames.map(async (soundName) => {
+        if (!loadedSounds.current[soundName] && SOUND_FILES[soundName]) {
+          try {
+            const { sound } = await Audio.Sound.createAsync(SOUND_FILES[soundName], {
               shouldPlay: false,
               volume: (SOUND_VOLUMES[soundName] || 0.5) * masterVolume,
-            }
-          );
-          loadedSounds.current[soundName] = sound;
-        } catch (error) {
-          console.error(`Error preloading sound ${soundName}:`, error);
+            });
+            loadedSounds.current[soundName] = sound;
+          } catch (error) {
+            console.error(`Error preloading sound ${soundName}:`, error);
+          }
         }
-      }
-    });
-    
-    await Promise.all(promises);
-  }, [masterVolume]);
+      });
+
+      await Promise.all(promises);
+    },
+    [masterVolume]
+  );
 
   const toggleSound = useCallback(async () => {
     const newValue = !soundEnabled;
     setSoundEnabled(newValue);
     await SecureStore.setItemAsync('soundEnabled', String(newValue));
-    
+
     // Stop all sounds when disabling
     if (!newValue) {
       await stopAllSounds();
@@ -264,7 +270,7 @@ export const SoundProvider = ({ children }) => {
     const clampedVolume = Math.max(0, Math.min(1, volume));
     setMasterVolume(clampedVolume);
     await SecureStore.setItemAsync('masterVolume', String(clampedVolume));
-    
+
     // Update volume for all loaded sounds
     const promises = Object.values(loadedSounds.current).map(async (sound) => {
       try {
@@ -276,7 +282,7 @@ export const SoundProvider = ({ children }) => {
         console.warn('Error updating sound volume:', error);
       }
     });
-    
+
     await Promise.all(promises);
   }, []);
 
@@ -286,14 +292,11 @@ export const SoundProvider = ({ children }) => {
     let sound = loadedSounds.current['background'];
     if (!sound) {
       try {
-        const { sound: newSound } = await Audio.Sound.createAsync(
-          SOUND_FILES['background'],
-          {
-            shouldPlay: false,
-            isLooping: true,
-            volume: (SOUND_VOLUMES['background'] || 0.5) * masterVolume,
-          }
-        );
+        const { sound: newSound } = await Audio.Sound.createAsync(SOUND_FILES['background'], {
+          shouldPlay: false,
+          isLooping: true,
+          volume: (SOUND_VOLUMES['background'] || 0.5) * masterVolume,
+        });
         loadedSounds.current['background'] = newSound;
         sound = newSound;
       } catch (error) {
@@ -342,7 +345,7 @@ export const SoundProvider = ({ children }) => {
     masterVolume,
     isLoading,
     backgroundMusicEnabled,
-    
+
     // Actions
     playSound,
     playRandomSound,
@@ -355,14 +358,10 @@ export const SoundProvider = ({ children }) => {
     playBackgroundMusic, // Expose background music controls
     stopBackgroundMusic,
     toggleBackgroundMusic,
-    
+
     // Constants
     SOUND_NAMES: Object.keys(SOUND_FILES),
   };
 
-  return (
-    <SoundContext.Provider value={value}>
-      {children}
-    </SoundContext.Provider>
-  );
+  return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;
 };

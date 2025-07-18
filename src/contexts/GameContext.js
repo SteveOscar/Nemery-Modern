@@ -24,29 +24,29 @@ export const GameProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const difficultyConfig = {
-    Easy: { 
-      gridSize: [2, 2], 
+    Easy: {
+      gridSize: [2, 2],
       maxNumber: (level) => Math.min(6 * level, 99),
       pointsPerTile: 1,
       timeMultiplier: 1.5,
       bonusMultiplier: 1.3,
     },
-    Medium: { 
-      gridSize: [3, 2], 
+    Medium: {
+      gridSize: [3, 2],
       maxNumber: (level) => Math.min(8 * level, 99),
       pointsPerTile: 2,
       timeMultiplier: 2,
       bonusMultiplier: 2,
     },
-    Hard: { 
-      gridSize: [3, 3], 
+    Hard: {
+      gridSize: [3, 3],
       maxNumber: (level) => Math.min(10 * level, 99),
       pointsPerTile: 3,
       timeMultiplier: 3,
       bonusMultiplier: 3,
     },
-    Extreme: { 
-      gridSize: [4, 4], 
+    Extreme: {
+      gridSize: [4, 4],
       maxNumber: (level) => Math.min(16 * level, 99),
       pointsPerTile: 4,
       timeMultiplier: 3,
@@ -75,18 +75,21 @@ export const GameProvider = ({ children }) => {
     let userScore = 0;
     if (apiData && apiData.data) {
       if (Array.isArray(apiData.data.high_scores)) {
-        highScoresArr = apiData.data.high_scores.map(entry => [entry.name || 'Anonymous', entry.score || 0]);
+        highScoresArr = apiData.data.high_scores.map((entry) => [
+          entry.name || 'Anonymous',
+          entry.score || 0,
+        ]);
       }
       if (typeof apiData.data.user_score === 'number') {
         userScore = apiData.data.user_score;
       }
     } else if (Array.isArray(apiData)) {
-      highScoresArr = apiData.map(entry => [entry.name || 'Anonymous', entry.score || 0]);
+      highScoresArr = apiData.map((entry) => [entry.name || 'Anonymous', entry.score || 0]);
       if (username) {
-        const userEntry = apiData.find(entry => entry.name === username);
+        const userEntry = apiData.find((entry) => entry.name === username);
         if (userEntry) userScore = userEntry.score;
       } else if (apiData.length > 0) {
-        userScore = Math.max(...apiData.map(entry => entry.score || 0));
+        userScore = Math.max(...apiData.map((entry) => entry.score || 0));
       }
     }
     return { highScores: highScoresArr, userScore };
@@ -121,25 +124,30 @@ export const GameProvider = ({ children }) => {
     setLevel(1);
   }, []);
 
-  const endGame = useCallback(async (finalScore) => {
-    setIsPlaying(false);
-    if(!finalScore) { return }
-    // Submit score to API
-    try {
-      await apiService.submitScore(finalScore);
-    } catch (err) {
-      console.error('Failed to submit score to API:', err);
-    }
-    const updatedHighScores = { ...highScores };
-    if (finalScore > updatedHighScores.userScore) {
-      updatedHighScores.userScore = finalScore;
-    }
-    const topScores = [...(updatedHighScores.highScores || [])];
-    topScores.push(['Anonymous', finalScore]);
-    topScores.sort((a, b) => b[1] - a[1]);
-    updatedHighScores.highScores = topScores.slice(0, 5);
-    await saveHighScores(updatedHighScores);
-  }, [highScores, saveHighScores]);
+  const endGame = useCallback(
+    async (finalScore) => {
+      setIsPlaying(false);
+      if (!finalScore) {
+        return;
+      }
+      // Submit score to API
+      try {
+        await apiService.submitScore(finalScore);
+      } catch (err) {
+        console.error('Failed to submit score to API:', err);
+      }
+      const updatedHighScores = { ...highScores };
+      if (finalScore > updatedHighScores.userScore) {
+        updatedHighScores.userScore = finalScore;
+      }
+      const topScores = [...(updatedHighScores.highScores || [])];
+      topScores.push(['Anonymous', finalScore]);
+      topScores.sort((a, b) => b[1] - a[1]);
+      updatedHighScores.highScores = topScores.slice(0, 5);
+      await saveHighScores(updatedHighScores);
+    },
+    [highScores, saveHighScores]
+  );
 
   const updateScore = useCallback(() => {
     const config = difficultyConfig[difficulty];
@@ -184,9 +192,5 @@ export const GameProvider = ({ children }) => {
     resetGameState, // Expose reset
   };
 
-  return (
-    <GameContext.Provider value={value}>
-      {children}
-    </GameContext.Provider>
-  );
+  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 };

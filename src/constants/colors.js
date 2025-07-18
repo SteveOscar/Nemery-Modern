@@ -88,4 +88,4 @@ export const tileColors = {
 export const tileTextColors = {
   dark: colors.tileTextDark,
   light: colors.tileTextLight,
-}; 
+};
