@@ -25,6 +25,7 @@ const SOUND_FILES = {
   beep: require('../../assets/sounds/button.mp3'),
   exhale: require('../../assets/sounds/button.mp3'),
   scream: require('../../assets/sounds/button.mp3'),
+  background: require('../../assets/sounds/whoosh.mp3'), // Use whoosh as background music for now
 };
 
 // Default volume levels for each sound
@@ -273,6 +274,47 @@ export const SoundProvider = ({ children }) => {
     await Promise.all(promises);
   }, []);
 
+  // Background music support
+  const playBackgroundMusic = useCallback(async () => {
+    if (!soundEnabled) return;
+    let sound = loadedSounds.current['background'];
+    if (!sound) {
+      try {
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          SOUND_FILES['background'],
+          {
+            shouldPlay: false,
+            isLooping: true,
+            volume: (SOUND_VOLUMES['background'] || 0.5) * masterVolume,
+          }
+        );
+        loadedSounds.current['background'] = newSound;
+        sound = newSound;
+      } catch (error) {
+        console.error('Error loading background music:', error);
+        return;
+      }
+    }
+    try {
+      await sound.setIsLoopingAsync(true);
+      await sound.setVolumeAsync((SOUND_VOLUMES['background'] || 0.5) * masterVolume);
+      await sound.playAsync();
+    } catch (error) {
+      console.error('Error playing background music:', error);
+    }
+  }, [soundEnabled, masterVolume]);
+
+  const stopBackgroundMusic = useCallback(async () => {
+    const sound = loadedSounds.current['background'];
+    if (sound) {
+      try {
+        await sound.stopAsync();
+      } catch (error) {
+        console.warn('Error stopping background music:', error);
+      }
+    }
+  }, []);
+
   const value = {
     // State
     soundEnabled,
@@ -288,6 +330,8 @@ export const SoundProvider = ({ children }) => {
     preloadSounds,
     toggleSound,
     setVolume,
+    playBackgroundMusic, // Expose background music controls
+    stopBackgroundMusic,
     
     // Constants
     SOUND_NAMES: Object.keys(SOUND_FILES),

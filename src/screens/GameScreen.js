@@ -83,7 +83,7 @@ const GameScreen = () => {
   const [overlayType, setOverlayType] = useState('success');
 
   const { playSound } = useSound();
-  const playButtonSound = useCallback(() => playSound('tap'), [playSound]);
+  const playButtonSound = useCallback(() => playSound('tap', { overlap: true }), [playSound]);
   const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
   const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
 
