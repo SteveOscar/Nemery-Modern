@@ -31,7 +31,7 @@ class ApiService {
       },
     };
     if (this.token) {
-      config.headers['Authorization'] = `Bearer ${this.token}`;
+      config.headers.Authorization = `Bearer ${this.token}`;
     }
     try {
       console.log('API request!!!!!:', url, config);

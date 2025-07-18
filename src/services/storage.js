@@ -1,18 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class StorageService {
-  // Keys for different types of data
-  static KEYS = {
-    USER_TOKEN: 'user_token',
-    USER_PROFILE: 'user_profile',
-    GAME_STATE: 'game_state',
-    BEST_SCORE: 'best_score',
-    GAME_STATISTICS: 'game_statistics',
-    SETTINGS: 'settings',
-    SOUND_ENABLED: 'sound_enabled',
-    VIBRATION_ENABLED: 'vibration_enabled',
-  };
-
   // Generic storage methods
   async setItem(key, value) {
     try {
@@ -187,5 +175,16 @@ class StorageService {
     return await this.setItem('app_version', version);
   }
 }
+
+StorageService.KEYS = {
+  USER_TOKEN: 'user_token',
+  USER_PROFILE: 'user_profile',
+  GAME_STATE: 'game_state',
+  BEST_SCORE: 'best_score',
+  GAME_STATISTICS: 'game_statistics',
+  SETTINGS: 'settings',
+  SOUND_ENABLED: 'sound_enabled',
+  VIBRATION_ENABLED: 'vibration_enabled',
+};
 
 export default new StorageService();

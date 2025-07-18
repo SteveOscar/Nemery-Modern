@@ -188,7 +188,7 @@ const ScoreboardScreen = () => {
 
       <Animated.View style={{ opacity: fadeAnim1 }}>
         <AppText style={styles.title} allowFontScaling={false}>
-          The Legends
+          Global Legends
         </AppText>
       </Animated.View>
 
@@ -241,20 +241,13 @@ const ScoreboardScreen = () => {
       </View>
 
       <Animated.View style={[styles.userScoreContainer, { opacity: fadeAnim2 }]}>
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
-          style={styles.userScoreCard}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={styles.divider} />
-          <AppText style={styles.yourScoreLabel} allowFontScaling={false}>
-            Your Best:
-          </AppText>
-          <AppText style={styles.yourScoreValue} allowFontScaling={false}>
-            {userScore}
-          </AppText>
-        </LinearGradient>
+        <View style={styles.divider} />
+        <AppText style={styles.yourScoreLabel} allowFontScaling={false}>
+          Your Top Score:
+        </AppText>
+        <AppText style={styles.yourScoreValue} allowFontScaling={false}>
+          {userScore}
+        </AppText>
       </Animated.View>
     </View>
   );
@@ -310,7 +303,7 @@ const styles = StyleSheet.create({
   scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 6,
     paddingHorizontal: 24,
     marginBottom: 12,
     borderRadius: 16,
