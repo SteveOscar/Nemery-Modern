@@ -157,6 +157,13 @@ export const GameProvider = ({ children }) => {
     return difficultyConfig[difficulty];
   }, [difficulty]);
 
+  const resetGameState = useCallback(() => {
+    setLevel(1);
+    setScore(0);
+    setIsPlaying(false);
+    // Optionally reset other state if needed in the future
+  }, []);
+
   const value = {
     difficulty,
     level,
@@ -173,6 +180,7 @@ export const GameProvider = ({ children }) => {
     nextLevel,
     saveHighScores,
     getCurrentConfig,
+    resetGameState, // Expose reset
   };
 
   return (

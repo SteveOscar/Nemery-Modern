@@ -17,7 +17,7 @@ import Animated, {
   withRepeat,
   Easing,
 } from 'react-native-reanimated';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useGame } from '../contexts/GameContext';
 import { useSound } from '../contexts/SoundContext';
 import { useUser } from '../contexts/UserContext';
@@ -30,7 +30,7 @@ const { width, height } = Dimensions.get('window');
 
 const MenuScreen = () => {
   const navigation = useNavigation();
-  const { difficulty, changeDifficulty, startGame } = useGame();
+  const { difficulty, changeDifficulty, startGame, resetGameState } = useGame();
   const { playSound, playRandomSound, soundEnabled, toggleSound } = useSound();
   const { username, isAuthenticated } = useUser();
   
@@ -66,6 +66,12 @@ const MenuScreen = () => {
     startFlippingAnimation();
   }, [isAuthenticated]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      resetGameState();
+    }, [resetGameState])
+  );
+
   const startFlippingAnimation = () => {
     const flipInterval = setInterval(() => {
       if (flipCardRef.current) {
@@ -83,6 +89,7 @@ const MenuScreen = () => {
   };
 
   const handleDifficultyChange = async () => {
+    resetGameState();
     changeDifficulty();
     
     // Play scream sound when switching to Extreme

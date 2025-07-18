@@ -9,7 +9,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSound } from '../contexts/SoundContext';
 import { useGame } from '../contexts/GameContext';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Board from '../components/Board';
 import Overlay from '../components/Overlay';
 import InfoBar from '../components/InfoBar';
@@ -187,6 +187,25 @@ const GameScreen = () => {
     setTileScales(Array(totalTiles).fill().map(() => new Animated.Value(1)));
   }, [totalTiles]);
 
+  // Reset all per-board state when GameScreen is focused (prevents stale arrays)
+  useFocusEffect(
+    React.useCallback(() => {
+      setTileScales(Array(totalTiles).fill().map(() => new Animated.Value(1)));
+      setTileFlipped(Array(totalTiles).fill(false));
+      setNumbers(Array(totalTiles).fill(''));
+      setHiddenNumbers(generateNumbers(size, difficulty, level));
+      setBeenClicked([]);
+      setPrevSelection(-1);
+      setInPlay(false);
+      setShowTimerBar(false);
+      setTimerSeconds(0);
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    }, [size[0], size[1], difficulty, level])
+  );
+
   const alreadyClicked = useCallback(
     (id) => {
       if (beenClicked.includes(id)) return true;
@@ -279,6 +298,12 @@ const GameScreen = () => {
     navigation.navigate('Menu');
   };
 
+  const ready =
+    tileScales.length === totalTiles &&
+    tileFlipped.length === totalTiles &&
+    numbers.length === totalTiles &&
+    hiddenNumbers.length === totalTiles;
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -313,22 +338,24 @@ const GameScreen = () => {
           />
         </View>
       )}
-      <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}>
-        <Overlay
-          visible={overlayVisible}
-          message={overlayMessage}
-          type={overlayType}
-          anim={overlayAnim}
-        />
-        <InfoBar score={score} level={level} />
-        <Board
-          size={size}
-          numbers={numbers}
-          tileScales={tileScales}
-          tileFlipped={tileFlipped}
-          onTilePress={clickTile}
-        />
-      </Animated.View>
+      {ready && (
+        <Animated.View style={[styles.gameContainer, { opacity: fadeAnim }]}>
+          <Overlay
+            visible={overlayVisible}
+            message={overlayMessage}
+            type={overlayType}
+            anim={overlayAnim}
+          />
+          <InfoBar score={score} level={level} />
+          <Board
+            size={size}
+            numbers={numbers}
+            tileScales={tileScales}
+            tileFlipped={tileFlipped}
+            onTilePress={clickTile}
+          />
+        </Animated.View>
+      )}
     </View>
   );
 };
