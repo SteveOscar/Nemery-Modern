@@ -125,6 +125,12 @@ const MenuScreen = () => {
 
   return (
     <View style={styles.container}>
+      {console.log('Gradient colors:', [
+        colors.background,
+        colors.gameBoard,
+        colors.primaryDark,
+        colors.primary,
+      ])}
       <LinearGradient
         colors={[colors.background, colors.gameBoard, colors.primaryDark, colors.primary]}
         style={styles.backgroundGradient}
