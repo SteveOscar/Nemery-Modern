@@ -16,7 +16,7 @@ import BackButton from '../components/BackButton';
 import AppText from '../components/AppText';
 import { colors } from '../constants/colors';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 function maxNumber(difficulty, level) {
   if (difficulty === 'Extreme') return Math.min(16 * level, 99);
@@ -46,14 +46,6 @@ function timeAdjustment(difficulty) {
   return 2;
 }
 
-function gameStartDelay(difficulty, difficultyFactor) {
-  if (difficulty === 'Easy') return difficultyFactor;
-  if (difficulty === 'Medium') return difficultyFactor - 0.2;
-  if (difficulty === 'Hard') return difficultyFactor - 0.5;
-  if (difficulty === 'Extreme') return difficultyFactor - 0.3;
-  return difficultyFactor;
-}
-
 const GameScreen = () => {
   const { difficulty, level, getCurrentConfig, score, nextLevel, updateScore, endGame } = useGame();
   const navigation = useNavigation();
@@ -76,6 +68,7 @@ const GameScreen = () => {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const timerBarAnim = useRef(new Animated.Value(1)).current;
   const timerIntervalRef = useRef(null);
+  const memorizationTimeoutRef = useRef(null);
 
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayMessage, setOverlayMessage] = useState('');
@@ -107,7 +100,12 @@ const GameScreen = () => {
       // First, show all tiles as flipped (question mark) for 0.5s
       setTileFlipped(Array(totalTiles).fill(true));
       setNumbers(Array(totalTiles).fill(''));
-      setTimeout(() => {
+      if (memorizationTimeoutRef.current) {
+        clearTimeout(memorizationTimeoutRef.current);
+        memorizationTimeoutRef.current = null;
+      }
+      memorizationTimeoutRef.current = setTimeout(() => {
+        memorizationTimeoutRef.current = null;
         showAllNumbers();
         if (shouldHide) {
           const difficultyFactor = timeAdjustment(difficulty) * 1.3;
@@ -131,10 +129,16 @@ const GameScreen = () => {
             duration,
             useNativeDriver: false,
           }).start();
-          setTimeout(() => {
+          if (memorizationTimeoutRef.current) {
+            clearTimeout(memorizationTimeoutRef.current);
+            memorizationTimeoutRef.current = null;
+          }
+          memorizationTimeoutRef.current = setTimeout(() => {
+            memorizationTimeoutRef.current = null;
             hideAllNumbers();
             setInPlay(true);
             setTimerSeconds(0);
+            setShowTimerBar(false);
             if (timerIntervalRef.current) {
               clearInterval(timerIntervalRef.current);
               timerIntervalRef.current = null;
@@ -204,6 +208,10 @@ const GameScreen = () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
+      }
+      if (memorizationTimeoutRef.current) {
+        clearTimeout(memorizationTimeoutRef.current);
+        memorizationTimeoutRef.current = null;
       }
     }, [size[0], size[1], difficulty, level])
   );
@@ -320,6 +328,22 @@ const GameScreen = () => {
     numbers.length === totalTiles &&
     hiddenNumbers.length === totalTiles;
 
+  // Helper to immediately end memorization phase
+  const skipMemorization = useCallback(() => {
+    if (memorizationTimeoutRef.current) {
+      clearTimeout(memorizationTimeoutRef.current);
+      memorizationTimeoutRef.current = null;
+    }
+    hideAllNumbers();
+    setInPlay(true);
+    setTimerSeconds(0);
+    setShowTimerBar(false);
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  }, [hideAllNumbers]);
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -353,6 +377,9 @@ const GameScreen = () => {
               },
             ]}
           />
+                    <AppText style={styles.skipButton} onPress={skipMemorization}>
+            Start Now
+          </AppText>
         </View>
       )}
       {ready && (
@@ -410,6 +437,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
     zIndex: 10,
+  },
+  skipButton: {
+    backgroundColor: colors.primaryDark,
+    color: colors.white,
+    fontWeight: 'bold',
+    fontSize: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 12,
+    overflow: 'hidden',
+    textAlign: 'center',
+    alignSelf: 'center',
+    elevation: 2,
   },
   timerBar: {
     height: 10,
