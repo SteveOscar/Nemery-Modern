@@ -148,6 +148,8 @@ const MenuScreen = () => {
       <View style={styles.menuContainer}>
         <Animated.View style={fadeAnimatedStyles[0]}>
           <Logo letters="NEMERY" />
+          <AppText style={styles.subtext}>Numbers + Memory</AppText>
+          
         </Animated.View>
 
         <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[0]]}>
@@ -264,14 +266,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 20,
-    borderWidth: 2,
     borderColor: colors.primary,
     shadowColor: colors.glow,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.7,
     shadowRadius: 16,
     elevation: 12,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.black,
   },
   welcomeText: {
     fontSize: 18,
@@ -281,6 +282,18 @@ const styles = StyleSheet.create({
     textShadowColor: colors.glow,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 8,
+  },
+  subtext: {
+    fontSize: 18,
+    color: colors.text,
+    fontFamily: 'System',
+    fontWeight: '600',
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+    alignSelf: 'center',
+    marginTop: -30,
+    marginBottom: 24,
   },
 });
 

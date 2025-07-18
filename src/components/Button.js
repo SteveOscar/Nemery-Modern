@@ -67,7 +67,7 @@ const Button = ({ text, onPress, sound = true, style, textStyle }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primaryDark,
     borderRadius: 10,
     marginBottom: 15,
     height: 60,
