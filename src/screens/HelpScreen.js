@@ -8,10 +8,10 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Button from '../components/Button';
 import AppText from '../components/AppText';
 import { colors } from '../constants/colors';
 import { useNavigation } from '@react-navigation/native';
+import BackButton from '../components/BackButton';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,11 +38,8 @@ const HelpScreen = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Button
-          text="← Back"
+        <BackButton
           onPress={() => navigation.navigate('Menu')}
-          style={[styles.backButton, styles.backButtonCustom]}
-          textStyle={styles.backButtonText}
         />
         <AppText style={styles.title}>How to Play</AppText>
         <View style={styles.placeholder} />
@@ -139,29 +136,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 16,
     elevation: 8,
-  },
-  backButton: {
-    minWidth: 80,
-    height: 40,
-    marginBottom: 0,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backButtonCustom: {
-    backgroundColor: colors.primaryDark,
-    borderColor: colors.primaryDark,
-    borderWidth: 2,
-    shadowColor: 'transparent',
-    elevation: 0,
-  },
-  backButtonText: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: 'bold',
-    textShadowColor: colors.glow,
-    textShadowRadius: 4,
-    textShadowOffset: { width: 0, height: 0 },
   },
   title: {
     fontSize: 20,

@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import Board from '../components/Board';
 import Overlay from '../components/Overlay';
 import InfoBar from '../components/InfoBar';
-import QuitButton from '../components/QuitButton';
+import BackButton from '../components/BackButton';
 import AppText from '../components/AppText';
 import { colors } from '../constants/colors';
 
@@ -293,7 +293,10 @@ const GameScreen = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-      <QuitButton onPress={handleQuit} />
+      <BackButton
+        onPress={handleQuit}
+        style={{ position: 'absolute', top: 40, left: 20, zIndex: 20 }}
+      />
       {showTimerBar && (
         <View style={styles.timerBarContainer}>
           <AppText style={styles.timerBarText}>Game starts in: {timerSeconds > 0 ? timerSeconds : ''}</AppText>

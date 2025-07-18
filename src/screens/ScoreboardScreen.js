@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Animated,
   ScrollView,
@@ -16,10 +15,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useGame } from '../contexts/GameContext';
 import { useSound } from '../contexts/SoundContext';
 import { useUser } from '../contexts/UserContext';
-import Button from '../components/Button';
 import apiService from '../services/api';
 import AppText from '../components/AppText';
 import { colors } from '../constants/colors';
+import BackButton from '../components/BackButton';
 
 const { width, height } = Dimensions.get('window');
 
@@ -192,6 +191,11 @@ const ScoreboardScreen = () => {
           />
         }
       >
+
+        <BackButton
+          style={{marginTop: 15, marginLeft: 10}}
+          onPress={() => navigation.navigate('Menu')}
+        />
         <View style={styles.starContainer}>
           <Animated.Text
             style={[
@@ -250,14 +254,6 @@ const ScoreboardScreen = () => {
               {userScore}
             </AppText>
           </LinearGradient>
-        </Animated.View>
-
-        <Animated.View style={[styles.buttonContainer, { opacity: fadeAnim3 }]}>
-          <Button
-            text="← ← ←"
-            onPress={handleBack}
-            style={styles.backButton}
-          />
         </Animated.View>
       </ScrollView>
     </View>
