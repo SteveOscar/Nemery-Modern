@@ -104,6 +104,9 @@ const GameScreen = () => {
   // Show/hide tiles with memorization delay
   const showTiles = useCallback(
     (shouldHide) => {
+      // First, show all tiles as flipped (question mark) for 0.5s
+      setTileFlipped(Array(totalTiles).fill(true));
+      setNumbers(Array(totalTiles).fill(''));
       setTimeout(() => {
         showAllNumbers();
         if (shouldHide) {
@@ -138,9 +141,9 @@ const GameScreen = () => {
             }
           }, duration);
         }
-      }, 500);
+      }, 500); // 0.5s with all tiles flipped before showing numbers
     },
-    [difficulty, showAllNumbers, hideAllNumbers, timerBarAnim]
+    [difficulty, showAllNumbers, hideAllNumbers, timerBarAnim, totalTiles]
   );
 
   const showOverlay = useCallback((message, type = 'success', callback) => {
@@ -285,6 +288,8 @@ const GameScreen = () => {
           setTileFlipped(Array(totalTiles).fill(false));
           setHiddenNumbers(generateNumbers(size, difficulty, level + 1));
           setInPlay(false);
+          // Show the new level transition: all tiles flipped for 0.5s, then memorization
+          showTiles(true);
         });
       } else {
         // Not done yet, update score and prevSelection
