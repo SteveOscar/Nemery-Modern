@@ -123,6 +123,7 @@ export const GameProvider = ({ children }) => {
 
   const endGame = useCallback(async (finalScore) => {
     setIsPlaying(false);
+    if(!finalScore) { return }
     // Submit score to API
     try {
       await apiService.submitScore(finalScore);

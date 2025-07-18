@@ -180,20 +180,10 @@ const ScoreboardScreen = () => {
         end={{ x: 1, y: 1 }}
       />
       
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={() => loadScores(true)}
-            tintColor="#ffffff"
-          />
-        }
-      >
+
 
         <BackButton
-          style={{marginTop: 15, marginLeft: 10}}
+          style={{marginTop: 45, marginLeft: 15}}
           onPress={() => navigation.navigate('Menu')}
         />
         <View style={styles.starContainer}>
@@ -207,11 +197,25 @@ const ScoreboardScreen = () => {
           </Animated.Text>
         </View>
 
+
         <Animated.View style={{ opacity: fadeAnim1 }}>
           <AppText style={styles.title} allowFontScaling={false}>
             The Legends
           </AppText>
         </Animated.View>
+
+        <View style={{borderWidth: 0, borderRadius: 10, marginHorizontal: 5, borderColor: 'white', backgroundColor: 'rgba(0, 0, 0, 0.17)'}}>
+        <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={() => loadScores(true)}
+            tintColor="#ffffff"
+          />
+        }
+      >
 
         <Animated.View style={[styles.scoresContainer, { opacity: fadeAnim2 }]}>
           {isLoading ? (
@@ -238,6 +242,8 @@ const ScoreboardScreen = () => {
             </LinearGradient>
           )}
         </Animated.View>
+        </ScrollView>
+        </View>
 
         <Animated.View style={[styles.userScoreContainer, { opacity: fadeAnim2 }]}>
           <LinearGradient
@@ -255,7 +261,6 @@ const ScoreboardScreen = () => {
             </AppText>
           </LinearGradient>
         </Animated.View>
-      </ScrollView>
     </View>
   );
 };
@@ -280,19 +285,20 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingVertical: 40,
+    paddingVertical: 20,
     paddingHorizontal: 20,
+    maxHeight: height * .5
   },
   starContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   star: {
-    fontSize: width * 0.25,
+    fontSize: width * 0.22,
     opacity: 0.9,
   },
   title: {
-    fontSize: height * 0.07,
+    fontSize: height * 0.05,
     color: colors.primary,
     fontFamily: 'System',
     textAlign: 'center',
@@ -360,12 +366,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   userScoreContainer: {
-    marginTop: 30,
+    marginTop: 20,
     alignItems: 'center',
   },
   userScoreCard: {
     paddingHorizontal: 32,
-    paddingVertical: 24,
+    paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
@@ -380,7 +386,7 @@ const styles = StyleSheet.create({
     width: '80%',
     height: 2,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   yourScoreLabel: {
     fontSize: height * 0.035,
@@ -389,15 +395,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: '600',
     letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   yourScoreValue: {
-    fontSize: height * 0.05,
+    fontSize: height * 0.04,
     fontFamily: 'System',
-    color: '#51cf66',
+    color: 'black',
     fontWeight: 'bold',
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
   },
   buttonContainer: {
     marginTop: 40,
