@@ -105,7 +105,7 @@ function UserProvider({ children }) {
         setError('Please enter a username');
         return false;
       }
-      if (username.length > 10) {
+      if (username.length > 15) {
         setError(`Username is ${username.length - 15} characters too long`);
         return false;
       }
