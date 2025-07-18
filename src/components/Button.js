@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
   },
   buttonText: {
-    fontSize: 36,
+    fontSize: 28,
     color: colors.text,
     fontWeight: '600',
     textShadowColor: colors.glow,

@@ -29,5 +29,8 @@
       "expo-font",
       "expo-secure-store"
     ]
+  },
+  "ios": {
+    "bundleIdentifier": "stevenoscarolson.native.numery"
   }
 }

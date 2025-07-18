@@ -1,7 +1,7 @@
-// src/contexts/GameContext.js
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import apiService from '../services/api';
+import { useSound } from '../contexts/SoundContext';
 
 const GameContext = createContext({});
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import storageService from '../services/storage';
 
+
 const BOARD_SIZE = 4;
 const WINNING_TILE = 2048;
 

@@ -1,4 +1,3 @@
-// src/screens/GameScreen.js
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
@@ -82,7 +81,7 @@ const GameScreen = () => {
   const [overlayMessage, setOverlayMessage] = useState('');
   const [overlayType, setOverlayType] = useState('success');
 
-  const { playSound } = useSound();
+  const { playSound, playBackgroundMusic, stopBackgroundMusic, backgroundMusicEnabled } = useSound();
   const playButtonSound = useCallback(() => playSound('tap', { overlap: true }), [playSound]);
   const playGameOverSound = useCallback(() => playSound('buzzer'), [playSound]);
   const playVictorySound = useCallback(() => playSound('bell'), [playSound]);
@@ -206,6 +205,18 @@ const GameScreen = () => {
     }, [size[0], size[1], difficulty, level])
   );
 
+  // Start/stop background music when GameScreen is focused/unfocused
+  useFocusEffect(
+    React.useCallback(() => {
+      if (backgroundMusicEnabled) {
+        playBackgroundMusic();
+      }
+      return () => {
+        stopBackgroundMusic();
+      };
+    }, [backgroundMusicEnabled, playBackgroundMusic, stopBackgroundMusic])
+  );
+
   const alreadyClicked = useCallback(
     (id) => {
       if (beenClicked.includes(id)) return true;
@@ -319,8 +330,9 @@ const GameScreen = () => {
         end={{ x: 1, y: 1 }}
       />
       <BackButton
+        text='← Quit'
         onPress={handleQuit}
-        style={{ position: 'absolute', top: 40, left: 20, zIndex: 20 }}
+        style={{ position: 'absolute', top: 50, left: 20, zIndex: 20 }}
       />
       {showTimerBar && (
         <View style={styles.timerBarContainer}>
@@ -387,8 +399,7 @@ const styles = StyleSheet.create({
   },
   timerBarContainer: {
     position: 'absolute',
-    top: 250
-    ,
+    top: 250,
     left: 0,
     right: 0,
     alignItems: 'center',

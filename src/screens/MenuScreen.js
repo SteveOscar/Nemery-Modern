@@ -1,8 +1,6 @@
-// src/screens/MenuScreen.js
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Dimensions,
   Image,
@@ -31,7 +29,7 @@ const { width, height } = Dimensions.get('window');
 const MenuScreen = () => {
   const navigation = useNavigation();
   const { difficulty, changeDifficulty, startGame, resetGameState } = useGame();
-  const { playSound, playRandomSound, soundEnabled, toggleSound } = useSound();
+  const { playSound, soundEnabled, toggleSound } = useSound();
   const { username, isAuthenticated } = useUser();
   
   // Reanimated shared values
@@ -43,6 +41,7 @@ const MenuScreen = () => {
   const flipCardRef = useRef(null);
   
   const [helpText] = useState('How To Play');
+  const { backgroundMusicEnabled, toggleBackgroundMusic } = useSound();
 
   useEffect(() => {
     // Check authentication
@@ -193,9 +192,17 @@ const MenuScreen = () => {
 
         <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[4]]}>
           <Button
-            text={`Sound: ${soundEnabled ? 'ON' : 'OFF'}`}
+            text={`Sound Effects: ${soundEnabled ? 'ON' : 'OFF'}`}
             onPress={toggleSound}
             sound={!soundEnabled}
+          />
+        </Animated.View>
+
+        <Animated.View style={[styles.buttonWrapper, fadeAnimatedStyles[4]]}>
+          <Button
+            text={`Music: ${backgroundMusicEnabled ? 'ON' : 'OFF'}`}
+            onPress={toggleBackgroundMusic}
+            sound={soundEnabled}
           />
         </Animated.View>
       </View>
@@ -238,7 +245,7 @@ const styles = StyleSheet.create({
     height: height * 0.15,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 40,
+    marginTop: -40
   },
   iconWrapper: {
     width: width * 0.25,
@@ -265,7 +272,7 @@ const styles = StyleSheet.create({
     maxWidth: 300,
   },
   buttonWrapper: {
-    marginBottom: 8,
+    marginBottom: 0,
   },
   welcomeContainer: {
     position: 'absolute',

@@ -25,7 +25,7 @@ const SOUND_FILES = {
   beep: require('../../assets/sounds/button.mp3'),
   exhale: require('../../assets/sounds/button.mp3'),
   scream: require('../../assets/sounds/eagle.mp3'),
-  background: require('../../assets/sounds/whoosh.mp3'), // Use whoosh as background music for now
+  background: require('../../assets/sounds/background_river.mp3'),
 };
 
 // Default volume levels for each sound
@@ -46,6 +46,7 @@ export const SoundProvider = ({ children }) => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [masterVolume, setMasterVolume] = useState(1.0);
   const [isLoading, setIsLoading] = useState(true);
+  const [backgroundMusicEnabled, setBackgroundMusicEnabled] = useState(true);
   const loadedSounds = useRef({});
   const soundQueue = useRef([]);
   const isPlaying = useRef({});
@@ -72,6 +73,7 @@ export const SoundProvider = ({ children }) => {
       // Load saved sound settings
       const savedSoundEnabled = await SecureStore.getItemAsync('soundEnabled');
       const savedVolume = await SecureStore.getItemAsync('masterVolume');
+      const savedMusicEnabled = await SecureStore.getItemAsync('backgroundMusicEnabled');
       
       if (savedSoundEnabled !== null) {
         setSoundEnabled(savedSoundEnabled === 'true');
@@ -79,6 +81,10 @@ export const SoundProvider = ({ children }) => {
       
       if (savedVolume !== null) {
         setMasterVolume(parseFloat(savedVolume));
+      }
+
+      if (savedMusicEnabled !== null) {
+        setBackgroundMusicEnabled(savedMusicEnabled === 'true');
       }
 
       // Preload common sounds
@@ -315,11 +321,27 @@ export const SoundProvider = ({ children }) => {
     }
   }, []);
 
+  // Toggle background music: update state, persist to SecureStore, and stop music immediately if turning off.
+  const toggleBackgroundMusic = useCallback(() => {
+    setBackgroundMusicEnabled((prev) => {
+      const next = !prev;
+      // Persist to SecureStore for next app launch, but do not rely on it for immediate logic
+      SecureStore.setItemAsync('backgroundMusicEnabled', String(next));
+      if (!next) {
+        // Always stop music immediately when toggling off
+        stopBackgroundMusic();
+      }
+      // Do NOT play music here when toggling ON; let screen logic handle it
+      return next;
+    });
+  }, [stopBackgroundMusic]);
+
   const value = {
     // State
     soundEnabled,
     masterVolume,
     isLoading,
+    backgroundMusicEnabled,
     
     // Actions
     playSound,
@@ -332,6 +354,7 @@ export const SoundProvider = ({ children }) => {
     setVolume,
     playBackgroundMusic, // Expose background music controls
     stopBackgroundMusic,
+    toggleBackgroundMusic,
     
     // Constants
     SOUND_NAMES: Object.keys(SOUND_FILES),
