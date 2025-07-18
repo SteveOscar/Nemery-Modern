@@ -300,7 +300,7 @@ function SoundProvider({ children }) {
 
   // Background music support
   const playBackgroundMusic = useCallback(async () => {
-    if (!soundEnabled) return;
+    if (!backgroundMusicEnabled) return;
     let sound = loadedSounds.current['background'];
     if (!sound) {
       try {
@@ -323,7 +323,7 @@ function SoundProvider({ children }) {
     } catch (error) {
       console.error('Error playing background music:', error);
     }
-  }, [soundEnabled, masterVolume]);
+  }, [backgroundMusicEnabled, masterVolume]);
 
   const stopBackgroundMusic = useCallback(async () => {
     const sound = loadedSounds.current['background'];
