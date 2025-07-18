@@ -2,7 +2,7 @@
   "expo": {
     "name": "Nemery-Modern",
     "slug": "Nemery-Modern",
-    "version": "1.0.0",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "stevenoscarolson.native.numery",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,9 +29,11 @@
     "web": {
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": ["expo-font", "expo-secure-store"]
-  },
-  "ios": {
-    "bundleIdentifier": "stevenoscarolson.native.numery"
+    "plugins": ["expo-font", "expo-secure-store"],
+    "extra": {
+      "eas": {
+        "projectId": "bfaa4dbe-2b76-48b9-98de-3d80a590e2af"
+      }
+    }
   }
 }

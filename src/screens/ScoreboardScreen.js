@@ -103,11 +103,6 @@ const ScoreboardScreen = () => {
     }
   };
 
-  const handleBack = async () => {
-    await playSound('whoosh');
-    navigation.goBack();
-  };
-
   const renderHighScore = (score, index) => {
     const [name, points] = score;
     const isCurrentUser = name === username;
@@ -122,7 +117,7 @@ const ScoreboardScreen = () => {
         end={{ x: 1, y: 1 }}
       >
         <AppText style={styles.rankText} allowFontScaling={false}>
-          {medal || `${index + 1}.`}
+          {medal || `${index + 1}`}
         </AppText>
         <AppText
           style={[styles.nameText, isCurrentUser && styles.currentUserText]}
@@ -328,6 +323,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+    marginRight: 10,
   },
   nameText: {
     flex: 1,

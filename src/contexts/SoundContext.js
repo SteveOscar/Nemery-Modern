@@ -52,7 +52,7 @@ const SOUND_VOLUMES = {
   beep: 0.3,
   exhale: 0.3,
   scream: 0.7,
-  background: 0.3,
+  background: 0.2,
 };
 
 function SoundProvider({ children }) {
