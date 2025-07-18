@@ -372,7 +372,7 @@ const GameScreen = () => {
       <BackButton
         text="← Quit"
         onPress={handleQuit}
-        style={{ position: 'absolute', top: 50, left: 20, zIndex: 20 }}
+        style={{ position: 'absolute', top: 60, left: 20, zIndex: 20 }}
       />
       {showTimerBar && (
         <View style={styles.timerBarContainer}>
@@ -454,12 +454,11 @@ const styles = StyleSheet.create({
   skipButton: {
     backgroundColor: colors.primaryDark,
     color: colors.white,
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 18,
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: 12,
     borderRadius: 12,
-    marginTop: 12,
+    marginTop: 16,
     overflow: 'hidden',
     textAlign: 'center',
     alignSelf: 'center',

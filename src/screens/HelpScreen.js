@@ -25,16 +25,11 @@ const HelpScreen = () => {
         end={{ x: 1, y: 1 }}
       />
 
-      <LinearGradient
-        colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <View style={styles.header}>
         <BackButton onPress={() => navigation.navigate('Menu')} />
         <AppText style={styles.title}>How to Play</AppText>
         <View style={styles.placeholder} />
-      </LinearGradient>
+      </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <LinearGradient
