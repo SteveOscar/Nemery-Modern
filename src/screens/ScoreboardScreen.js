@@ -4,14 +4,14 @@ import {
   View,
   StyleSheet,
   Animated,
-  ScrollView,
+  FlatList,
   ActivityIndicator,
   RefreshControl,
   Dimensions,
   Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useGame } from '../contexts/GameContext';
 import { useSound } from '../contexts/SoundContext';
 import { useUser } from '../contexts/UserContext';
@@ -196,43 +196,46 @@ const ScoreboardScreen = () => {
           backgroundColor: 'rgba(0, 0, 0, 0.17)',
         }}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={() => loadScores(true)}
-              tintColor="#ffffff"
+        <Animated.View style={[styles.scoresContainer, { opacity: fadeAnim2 }]}>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#ffffff" />
+          ) : error ? (
+            <LinearGradient
+              colors={['rgba(255, 107, 107, 0.2)', 'rgba(255, 107, 107, 0.1)']}
+              style={styles.errorContainer}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <AppText style={styles.errorText}>{error}</AppText>
+            </LinearGradient>
+          ) : sortedScores.length > 0 ? (
+            <FlatList
+              data={sortedScores}
+              keyExtractor={(_, index) => index.toString()}
+              renderItem={({ item, index }) => renderHighScore(item, index)}
+              contentContainerStyle={styles.scrollContent}
+              style={{ maxHeight: height * 0.5 }}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isRefreshing}
+                  onRefresh={() => loadScores(true)}
+                  tintColor="#ffffff"
+                />
+              }
+              ListEmptyComponent={null}
             />
-          }
-        >
-          <Animated.View style={[styles.scoresContainer, { opacity: fadeAnim2 }]}>
-            {isLoading ? (
-              <ActivityIndicator size="large" color="#ffffff" />
-            ) : error ? (
-              <LinearGradient
-                colors={['rgba(255, 107, 107, 0.2)', 'rgba(255, 107, 107, 0.1)']}
-                style={styles.errorContainer}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <AppText style={styles.errorText}>{error}</AppText>
-              </LinearGradient>
-            ) : sortedScores.length > 0 ? (
-              sortedScores.map((score, index) => renderHighScore(score, index))
-            ) : (
-              <LinearGradient
-                colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
-                style={styles.emptyContainer}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <AppText style={styles.emptyText}>No scores yet!</AppText>
-              </LinearGradient>
-            )}
-          </Animated.View>
-        </ScrollView>
+          ) : (
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+              style={styles.emptyContainer}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <AppText style={styles.emptyText}>No scores yet!</AppText>
+            </LinearGradient>
+          )}
+        </Animated.View>
       </View>
 
       <Animated.View style={[styles.userScoreContainer, { opacity: fadeAnim2 }]}>
@@ -270,7 +273,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingVertical: 20,
     paddingHorizontal: 20,
-    maxHeight: height * 0.5,
   },
   starContainer: {
     alignItems: 'center',
