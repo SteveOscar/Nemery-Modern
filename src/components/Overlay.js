@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AppText from './AppText';
 import { colors } from '../constants/colors';
 
-const Overlay = ({ visible, message, type, anim }) => {
+function Overlay({ visible, message, type, anim }) {
   if (!visible) return null;
 
   const gradientColors =
@@ -38,7 +38,7 @@ const Overlay = ({ visible, message, type, anim }) => {
       </LinearGradient>
     </Animated.View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   overlay: {

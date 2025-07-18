@@ -1,30 +1,32 @@
 // src/components/InfoBar.js
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AppText from './AppText';
 import { colors } from '../constants/colors';
 
-const InfoBar = ({ score, level }) => (
-  <View style={styles.infoBar}>
-    <LinearGradient
-      colors={[colors.overlay, colors.overlayLight]}
-      style={styles.infoContainer}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <View style={styles.infoItem}>
-        <AppText style={styles.infoLabel}>SCORE</AppText>
-        <AppText style={styles.infoValue}>{score}</AppText>
-      </View>
-      <View style={styles.divider} />
-      <View style={styles.infoItem}>
-        <AppText style={styles.infoLabel}>LEVEL</AppText>
-        <AppText style={styles.infoValue}>{level}</AppText>
-      </View>
-    </LinearGradient>
-  </View>
-);
+function InfoBar({ score, level }) {
+  return (
+    <View style={styles.infoBar}>
+      <LinearGradient
+        colors={[colors.overlay, colors.overlayLight]}
+        style={styles.infoContainer}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.infoItem}>
+          <AppText style={styles.infoLabel}>SCORE</AppText>
+          <AppText style={styles.infoValue}>{score}</AppText>
+        </View>
+        <View style={styles.divider} />
+        <View style={styles.infoItem}>
+          <AppText style={styles.infoLabel}>LEVEL</AppText>
+          <AppText style={styles.infoValue}>{level}</AppText>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   infoBar: {

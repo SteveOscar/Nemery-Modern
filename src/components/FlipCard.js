@@ -14,31 +14,27 @@ const FlipCard = forwardRef(
     const rotate = useSharedValue(0);
     const [isFlipped, setIsFlipped] = useState(false);
 
-    const frontAnimatedStyle = useAnimatedStyle(() => {
-      return {
-        transform: [
-          { perspective },
-          flipDirection === 'y'
-            ? { rotateY: `${rotate.value}deg` }
-            : { rotateX: `${rotate.value}deg` },
-        ],
-        opacity: interpolate(rotate.value, [0, 90, 91, 180], [1, 1, 0, 0], Extrapolate.CLAMP),
-        zIndex: interpolate(rotate.value, [0, 90, 91, 180], [1, 1, 0, 0], Extrapolate.CLAMP),
-      };
-    });
+    const frontAnimatedStyle = useAnimatedStyle(() => ({
+      transform: [
+        { perspective },
+        flipDirection === 'y'
+          ? { rotateY: `${rotate.value}deg` }
+          : { rotateX: `${rotate.value}deg` },
+      ],
+      opacity: interpolate(rotate.value, [0, 90, 91, 180], [1, 1, 0, 0], Extrapolate.CLAMP),
+      zIndex: interpolate(rotate.value, [0, 90, 91, 180], [1, 1, 0, 0], Extrapolate.CLAMP),
+    }));
 
-    const backAnimatedStyle = useAnimatedStyle(() => {
-      return {
-        transform: [
-          { perspective },
-          flipDirection === 'y'
-            ? { rotateY: `${rotate.value + 180}deg` }
-            : { rotateX: `${rotate.value + 180}deg` },
-        ],
-        opacity: interpolate(rotate.value, [0, 89, 90, 180], [0, 0, 1, 1], Extrapolate.CLAMP),
-        zIndex: interpolate(rotate.value, [0, 89, 90, 180], [0, 0, 1, 1], Extrapolate.CLAMP),
-      };
-    });
+    const backAnimatedStyle = useAnimatedStyle(() => ({
+      transform: [
+        { perspective },
+        flipDirection === 'y'
+          ? { rotateY: `${rotate.value + 180}deg` }
+          : { rotateX: `${rotate.value + 180}deg` },
+      ],
+      opacity: interpolate(rotate.value, [0, 89, 90, 180], [0, 0, 1, 1], Extrapolate.CLAMP),
+      zIndex: interpolate(rotate.value, [0, 89, 90, 180], [0, 0, 1, 1], Extrapolate.CLAMP),
+    }));
 
     useImperativeHandle(ref, () => ({
       flip: () => {

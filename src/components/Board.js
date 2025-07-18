@@ -1,6 +1,6 @@
 // src/components/Board.js
 import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FlippableTile from './FlippableTile';
 import { CELL_SIZE, CELL_PADDING } from '../constants/game';
@@ -11,7 +11,7 @@ const TILE_SPACING = 10;
 
 const { width, height } = Dimensions.get('window');
 
-const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
+function Board({ size, numbers, tileScales, tileFlipped, onTilePress }) {
   const [cols, rows] = size;
   const boardWidth = width * 0.9;
   const boardHeight = height * 0.7;
@@ -24,7 +24,7 @@ const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
   const offsetY = (boardHeight - gridHeight) / 2;
 
   const tiles = [];
-  for (let id = 0; id < cols * rows; id++) {
+  for (let id = 0; id < cols * rows; id += 1) {
     const col = id % cols;
     const row = Math.floor(id / cols);
     // Add TILE_SPACING between tiles
@@ -95,7 +95,7 @@ const Board = ({ size, numbers, tileScales, tileFlipped, onTilePress }) => {
       {tiles}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

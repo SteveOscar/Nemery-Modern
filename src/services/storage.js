@@ -84,7 +84,7 @@ class StorageService {
   }
 
   // Scores
-  async saveBestScore(score) {
+  static async saveBestScore(score) {
     const currentBest = await StorageService.getBestScore();
     if (score > currentBest) {
       return StorageService.setItem(StorageService.KEYS.BEST_SCORE, score);

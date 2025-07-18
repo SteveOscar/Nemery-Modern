@@ -39,7 +39,7 @@ const normalizeUser = (rawData) => {
   return userData;
 };
 
-export const UserProvider = ({ children }) => {
+function UserProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -106,7 +106,7 @@ export const UserProvider = ({ children }) => {
         return false;
       }
       if (username.length > 10) {
-        setError(`Username is ${username.length - 10} characters too long`);
+        setError(`Username is ${username.length - 15} characters too long`);
         return false;
       }
       const validUsername = /^[a-zA-Z0-9_-]+$/.test(username);
@@ -211,4 +211,6 @@ export const UserProvider = ({ children }) => {
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
-};
+}
+
+export { UserProvider };

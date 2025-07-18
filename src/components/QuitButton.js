@@ -1,21 +1,23 @@
 // src/components/QuitButton.js
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AppText from './AppText';
 
-const QuitButton = ({ onPress }) => (
-  <TouchableOpacity style={styles.quitButton} onPress={onPress} activeOpacity={0.8}>
-    <LinearGradient
-      colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
-      style={styles.buttonGradient}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <AppText style={styles.quitButtonText}>✕</AppText>
-    </LinearGradient>
-  </TouchableOpacity>
-);
+function QuitButton({ onPress }) {
+  return (
+    <TouchableOpacity style={styles.quitButton} onPress={onPress} activeOpacity={0.8}>
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
+        style={styles.buttonGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <AppText style={styles.quitButtonText}>✕</AppText>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+}
 
 const styles = StyleSheet.create({
   quitButton: {

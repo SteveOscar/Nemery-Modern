@@ -1,10 +1,12 @@
 // Modern App.js using Expo, React Navigation, and Context API
 import React from 'react';
 import { useFonts } from 'expo-font';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { StatusBar } from 'expo-status-bar';
+// import { StatusBar } from 'expo-status-bar'; // ERROR: Unable to resolve path to module 'expo-status-bar'. Install with 'expo install expo-status-bar'.
+import logoImg from './assets/images/icon_logo.png';
+import bgImg from './assets/images/backgroundTop.png';
 import { theme } from './src/constants/theme';
 
 // Contexts
@@ -30,9 +32,7 @@ export default function App() {
 
   if (!fontsLoaded) {
     return (
-      <View
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}
-      >
+      <View style={styles.container}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -43,7 +43,7 @@ export default function App() {
       <GameProvider>
         <SoundProvider>
           <NavigationContainer>
-            <StatusBar style="light" />
+            {/* <StatusBar style="light" /> */}
             <Stack.Navigator
               screenOptions={{
                 headerShown: false,
@@ -68,3 +68,12 @@ export default function App() {
     </UserProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+});

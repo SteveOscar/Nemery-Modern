@@ -55,7 +55,7 @@ const SOUND_VOLUMES = {
   background: 0.3,
 };
 
-export const SoundProvider = ({ children }) => {
+function SoundProvider({ children }) {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [masterVolume, setMasterVolume] = useState(1.0);
   const [isLoading, setIsLoading] = useState(true);
@@ -376,4 +376,6 @@ export const SoundProvider = ({ children }) => {
   };
 
   return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;
-};
+}
+
+export { SoundProvider };

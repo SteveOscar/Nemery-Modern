@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { StyleSheet, Pressable, Dimensions } from 'react-native';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
@@ -8,7 +8,7 @@ import { theme } from '../constants/theme';
 
 const { height } = Dimensions.get('window');
 
-const Button = ({ text, onPress, sound = true, style, textStyle }) => {
+function Button({ text, onPress, sound = true, style, textStyle }) {
   const playButtonSound = useCallback(async () => {
     if (!sound) return;
 
@@ -28,7 +28,7 @@ const Button = ({ text, onPress, sound = true, style, textStyle }) => {
         }
       });
     } catch (error) {
-      console.warn('Error playing button sound:', error);
+      // console.warn('Error playing button sound:', error);
     }
   }, [sound]);
 
@@ -53,7 +53,7 @@ const Button = ({ text, onPress, sound = true, style, textStyle }) => {
       </AppText>
     </Pressable>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import FlippableTile from './FlippableTile';
 import AppText from './AppText';
 import { colors } from '../constants/colors';
@@ -8,7 +9,7 @@ const LETTERS = ['N', 'E', 'M', 'E', 'R', 'Y'];
 
 const SIZE_MAP = {
   small: 20,
-  medium: 36,
+  medium: 34,
   large: 48,
 };
 
@@ -18,7 +19,7 @@ const TILE_SIZE_MAP = {
   large: 68,
 };
 
-const Logo = ({ size = 'medium', style }) => {
+function Logo({ size = 'medium', style }) {
   const [flipped, setFlipped] = useState(Array(LETTERS.length).fill(false));
   const intervals = useRef([]);
 
@@ -43,63 +44,81 @@ const Logo = ({ size = 'medium', style }) => {
 
   const fontSize = SIZE_MAP[size] || SIZE_MAP.medium;
   const tileSize = TILE_SIZE_MAP[size] || TILE_SIZE_MAP.medium;
+  const borderRadius = 16;
+  const borderWidth = 2;
+
+  // Size-dependent styles
+  const tileWrapperStyle = {
+    width: tileSize,
+    height: tileSize,
+    borderRadius,
+    overflow: 'hidden',
+  };
+  const tileNumberTextStyle = {
+    fontSize,
+    fontWeight: '700',
+    color: colors.primaryDark,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  };
+  const tileQuestionTextStyle = {
+    fontSize: fontSize,
+    fontWeight: '800',
+    color: colors.primary,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  };
 
   return (
     <View style={[styles.row, style]}>
       {LETTERS.map((letter, i) => (
-        <View key={i} style={{ marginHorizontal: 4 }}>
+        <View key={`${letter}-${i}`} style={styles.letterContainer}>
           <FlippableTile
             isFlipped={flipped[i]}
             duration={500}
-            style={{ width: tileSize, height: tileSize, borderRadius: 8, overflow: 'hidden' }}
+            style={tileWrapperStyle}
             frontContent={
-              <View
-                style={[
-                  styles.tile,
-                  { backgroundColor: colors.primaryDark, borderColor: colors.primaryLight },
-                ]}
+              <LinearGradient
+                colors={[colors.primaryDark, colors.primary, colors.accentGlow]}
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius,
+                  borderWidth,
+                  borderColor: colors.primary,
+                }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
               >
-                <AppText
-                  style={{
-                    color: colors.text,
-                    fontWeight: 'bold',
-                    fontSize,
-                    textAlign: 'center',
-                    textShadowColor: colors.glow,
-                    textShadowRadius: 8,
-                  }}
-                >
-                  {letter}
-                </AppText>
-              </View>
+                <AppText style={tileNumberTextStyle}>{letter}</AppText>
+              </LinearGradient>
             }
             backContent={
-              <View
-                style={[
-                  styles.tile,
-                  { backgroundColor: colors.primary, borderColor: colors.primaryDark },
-                ]}
+              <LinearGradient
+                colors={[colors.background, colors.primaryDark]}
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius,
+                  borderWidth,
+                  borderColor: colors.primary,
+                }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
               >
-                <AppText
-                  style={{
-                    color: colors.primaryDark,
-                    fontWeight: 'bold',
-                    fontSize,
-                    textAlign: 'center',
-                    textShadowColor: colors.glow,
-                    textShadowRadius: 8,
-                  }}
-                >
-                  ?
-                </AppText>
-              </View>
+                <AppText style={tileQuestionTextStyle}>?</AppText>
+              </LinearGradient>
             }
           />
         </View>
       ))}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   row: {
@@ -107,18 +126,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 40,
+    height: 60,
+    marginHorizontal: -50,
   },
-  tile: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderRadius: 8,
-    shadowColor: colors.glow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 6,
+  letterContainer: {
+    marginHorizontal: 4,
   },
 });
 

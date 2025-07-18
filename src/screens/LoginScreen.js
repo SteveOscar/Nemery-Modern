@@ -78,7 +78,7 @@ const LoginScreen = () => {
       return;
     }
 
-    if (username.length > 10) {
+    if (username.length > 15) {
       setLocalError(`Name is ${username.length - 10} characters too long`);
       return;
     }
@@ -100,7 +100,7 @@ const LoginScreen = () => {
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  const displayError = localError || error;
+  const displayError = localError || (error && error !== 'Failed to initialize user' ? error : '');
 
   return (
     <KeyboardAvoidingView
@@ -137,16 +137,9 @@ const LoginScreen = () => {
           </Animated.View>
 
           <Animated.View style={[styles.formContainer, { opacity: fadeAnim2 }]}>
-            <LinearGradient
-              colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']}
-              style={styles.formCard}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <AppText style={styles.instructionText} allowFontScaling={false}>
-                Create a User Name:
-              </AppText>
-            </LinearGradient>
+            <AppText style={styles.instructionText} allowFontScaling={false}>
+              Create a User Name
+            </AppText>
           </Animated.View>
 
           <Animated.View style={[styles.inputContainer, { opacity: fadeAnim3 }]}>
@@ -230,13 +223,14 @@ const styles = StyleSheet.create({
   },
   welcomeContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
+    paddingBottom: 20,
   },
   welcomeText: {
     fontSize: height * 0.045,
     color: colors.text,
     fontFamily: 'System',
-    marginBottom: -10,
+    marginBottom: 10,
     fontWeight: '600',
     textShadowColor: colors.glow,
     textShadowOffset: { width: 0, height: 0 },
@@ -260,7 +254,7 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     fontSize: height * 0.03,
-    color: '#ffffff',
+    color: colors.primary,
     fontFamily: 'System',
     fontWeight: '600',
     textShadowColor: 'rgba(0, 0, 0, 0.3)',

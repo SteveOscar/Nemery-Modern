@@ -1,8 +1,8 @@
 // src/components/FlippableTile.js
 import React, { useRef, useEffect } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet } from 'react-native';
 
-const FlippableTile = ({ frontContent, backContent, isFlipped, duration = 500, style }) => {
+function FlippableTile({ frontContent, backContent, isFlipped, duration = 500, style }) {
   const flipAnim = useRef(new Animated.Value(isFlipped ? 180 : 0)).current;
 
   useEffect(() => {
@@ -41,7 +41,7 @@ const FlippableTile = ({ frontContent, backContent, isFlipped, duration = 500, s
       <Animated.View style={[styles.side, styles.backSide, backStyle]}>{backContent}</Animated.View>
     </Animated.View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

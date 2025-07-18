@@ -1,17 +1,17 @@
-import React from 'react';
-import Button from './Button';
 import { StyleSheet } from 'react-native';
+import Button from './Button';
 import { colors } from '../constants/colors';
 
-const BackButton = ({ onPress, text = '← Back', style, textStyle, ...props }) => (
-  <Button
-    text={text}
-    onPress={onPress}
-    style={[styles.backButton, style]}
-    textStyle={[styles.backButtonText, textStyle]}
-    {...props}
-  />
-);
+function BackButton({ onPress, text = '← Back', style, textStyle }) {
+  return (
+    <Button
+      text={text}
+      onPress={onPress}
+      style={[styles.backButton, style]}
+      textStyle={[styles.backButtonText, textStyle]}
+    />
+  );
+}
 
 const styles = StyleSheet.create({
   backButton: {
